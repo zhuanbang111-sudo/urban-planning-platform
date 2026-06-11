@@ -1,0 +1,3 @@
+# 保存路径: public/_redirects
+# 将所有路由重定向到 index.html，交由前端 Vue Router 渲染，防止刷新页面时出现 404
+/*    /index.html   200
