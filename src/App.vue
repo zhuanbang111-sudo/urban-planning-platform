@@ -25,6 +25,11 @@
 // 导入自定义的导航栏与页脚组件
 import NavBar from './components/NavBar.vue'
 import FooterBar from './components/FooterBar.vue'
+// 在 src/App.vue 的 script setup 中引入下面两行：
+import { useUserStore } from './stores/user'
+
+// 页面加载时自动执行检查授权动作，恢复用户登录状态
+useUserStore().checkAuth()
 </script>
 
 <style>
