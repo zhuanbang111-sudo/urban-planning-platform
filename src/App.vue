@@ -22,13 +22,16 @@
 </template>
 
 <script setup>
-// 导入自定义的导航栏与页脚组件
+import { onMounted } from 'vue'
 import NavBar from './components/NavBar.vue'
 import FooterBar from './components/FooterBar.vue'
 import { useUserStore } from './stores/user'
 
-// 页面加载时自动执行检查授权动作，恢复用户登录状态
-useUserStore().checkAuth()
+const userStore = useUserStore()
+
+onMounted(() => {
+  userStore.checkAuth()
+})
 </script>
 
 <style>

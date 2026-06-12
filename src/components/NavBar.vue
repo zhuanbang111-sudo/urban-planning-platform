@@ -50,7 +50,7 @@
           <!-- 已登录状态 -->
           <div v-else class="flex items-center space-x-3">
             <span class="text-sm text-gray-300 bg-blue-900 px-3 py-1 rounded-full">
-              👤 {{ userEmail }}
+              👤 {{ userEmailTruncated }}
             </span>
             <button 
               @click="handleLogout" 
@@ -132,7 +132,7 @@
         </div>
         <div v-else class="flex items-center justify-between">
           <span class="text-sm text-gray-300">
-            👤 {{ userEmail }}
+            👤 {{ userEmailTruncated }}
           </span>
           <button 
             @click="handleLogoutAndClose" 
@@ -147,18 +147,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
 const route = useRoute()
-
-// 状态定义
-const isLoggedIn = ref(false)
-const userEmail = ref('')
+const userStore = useUserStore()
 const isMobileMenuOpen = ref(false)
 
-// 导航链接数据
 const navLinks = [
   { name: '首页', path: '/' },
   { name: '规划工具与表格', path: '/tools' },
@@ -167,45 +164,33 @@ const navLinks = [
   { name: '知识库', path: '/knowledge' }
 ]
 
-// 检测本地登录状态
-const checkLoginStatus = () => {
-  const loginState = localStorage.getItem('isLoggedIn')
-  const emailVal = localStorage.getItem('userEmail')
-  isLoggedIn.value = loginState === 'true'
-  userEmail.value = emailVal || 'guest@example.com'
-}
+const isLoggedIn = computed(() => userStore.isLoggedIn)
+const userEmail = computed(() => userStore.user?.email || '')
+const userEmailTruncated = computed(() => {
+  const value = userEmail.value
+  return value.length > 15 ? `${value.slice(0, 15)}...` : value
+})
 
-// 退出登录逻辑
 const handleLogout = () => {
-  localStorage.removeItem('isLoggedIn')
-  localStorage.removeItem('userEmail')
-  isLoggedIn.value = false
-  userEmail.value = ''
-  alert('您已成功安全退出登录。')
-  router.push('/')
+  userStore.logout()
 }
 
-// 移动端专属退出逻辑
 const handleLogoutAndClose = () => {
-  handleLogout()
+  userStore.logout()
   closeMobileMenu()
 }
 
-// 页面路由发生改变时重新同步登录状态，并收起移动端菜单
 watch(
   () => route.path,
   () => {
-    checkLoginStatus()
     closeMobileMenu()
   }
 )
 
-// 初始化挂载
 onMounted(() => {
-  checkLoginStatus()
+  userStore.checkAuth()
 })
 
-// 移动端菜单开关
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
@@ -214,7 +199,6 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
-// 点击Logo返回首页
 const goToHome = () => {
   router.push('/')
   closeMobileMenu()

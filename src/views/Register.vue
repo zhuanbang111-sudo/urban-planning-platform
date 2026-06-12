@@ -34,7 +34,7 @@
             v-model="password" 
             type="password" 
             required 
-            placeholder="设置至少 6 位的密码"
+            placeholder="设置至少 8 位的密码"
             class="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-900 focus:border-blue-900 text-sm"
           />
         </div>
@@ -53,17 +53,17 @@
           />
         </div>
 
-        <!-- 密码不一致时的实时红字校验提示 -->
-        <div v-if="passwordMismatchError" class="text-xs text-red-600 font-semibold animate-shake">
-          ⚠ {{ passwordMismatchError }}
+        <div v-if="errorMessage" class="text-xs text-red-600 font-semibold">
+          ⚠ {{ errorMessage }}
         </div>
 
-        <!-- 注册提交按钮 -->
         <button 
           type="submit" 
-          class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-700 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 transition-colors duration-200"
+          :disabled="loading"
+          class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-700 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 transition-colors duration-200 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
-          立即注册
+          <span v-if="loading">注册中...</span>
+          <span v-else>立即注册</span>
         </button>
       </form>
 
@@ -82,47 +82,63 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
-// 响应式表单数据
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-const passwordMismatchError = ref('')
+const errorMessage = ref('')
+const loading = ref(false)
 
-// 输入时动态校验两次密码是否一致
+const validateEmail = (value) => {
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return pattern.test(value)
+}
+
 const checkPasswordMatch = () => {
   if (confirmPassword.value && password.value !== confirmPassword.value) {
-    passwordMismatchError.value = '两次输入的密码不一致，请重新核对。'
+    errorMessage.value = '两次输入的密码不一致，请重新核对。'
   } else {
-    passwordMismatchError.value = ''
+    errorMessage.value = ''
   }
 }
 
-// 模拟注册逻辑
-const handleRegister = () => {
-  // 提交时再次进行严格一致性校验
+const handleRegister = async () => {
+  errorMessage.value = ''
+
+  if (!validateEmail(email.value)) {
+    errorMessage.value = '请输入合法的邮箱格式。'
+    return
+  }
+
+  if (password.value.length < 8) {
+    errorMessage.value = '密码长度不能少于 8 位。'
+    return
+  }
+
   if (password.value !== confirmPassword.value) {
-    passwordMismatchError.value = '注册失败：两次密码不一致。'
+    errorMessage.value = '两次输入的密码不一致，请重新核对。'
     return
   }
 
-  if (password.value.length < 6) {
-    passwordMismatchError.value = '注册失败：密码长度不能少于 6 位。'
-    return
+  loading.value = true
+
+  try {
+    const result = await userStore.register(email.value, password.value)
+    if (result.success) {
+      alert('注册成功，请登录')
+      router.push('/login')
+    } else {
+      errorMessage.value = result.message || '注册失败，请稍后重试。'
+    }
+  } catch (err) {
+    errorMessage.value = '网络异常，请稍后重试'
+  } finally {
+    loading.value = false
   }
-
-  passwordMismatchError.value = ''
-
-  // 模拟将注册信息存储在本地（为后续模拟登录提供测试账户）
-  localStorage.setItem('registered_email', email.value)
-  localStorage.setItem('registered_password', password.value)
-
-  alert('注册成功！正在前往登录页...')
-  
-  // 注册成功跳转登录页面
-  router.push('/login')
 }
 </script>
 
