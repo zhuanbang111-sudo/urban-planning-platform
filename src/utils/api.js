@@ -36,22 +36,18 @@ api.interceptors.response.use(
   }
 )
 
-export const register = (email, password) => {
-  return api.post('/register', { email, password })
-}
+// 修复后正确写法
+export const register = (email, password) =>
+  api.post('/api/register', { email, password })
 
-export const login = (email, password) => {
-  return api.post('/login', { email, password })
-}
+export const login = (email, password) =>
+  api.post('/api/login', { email, password })
 
-export const getMe = () => {
-  return api.get('/me')
-}
+export const getMe = () =>
+  api.get('/api/me')
 
-export const saveToolHistory = (toolName, inputData, result) => {
-  return api.post('/tool-history', { toolName, inputData, result })
-}
+export const saveToolHistory = (toolName, inputData, result) =>
+  api.post('/api/tool-history', { tool_name: toolName, input_data: inputData, result })
 
-export const getToolHistory = () => {
-  return api.get('/tool-history')
-}
+export const getToolHistory = () =>
+  api.get('/api/tool-history')
