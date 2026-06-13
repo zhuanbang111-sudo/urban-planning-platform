@@ -7,7 +7,7 @@
       <div class="text-center">
         <h2 class="text-3xl font-extrabold text-gray-900">新用户注册</h2>
         <p class="mt-2 text-sm text-gray-500">
-          注册成为规划师，享受专属AI政策解析和标准文件下载特权。
+          数据将实时写入云端 D1 数据库。注册解锁全部科研规划权限。
         </p>
       </div>
 
@@ -34,7 +34,7 @@
             v-model="password" 
             type="password" 
             required 
-            placeholder="设置至少 8 位的密码"
+            placeholder="设置至少 8 位的强密码"
             class="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-900 focus:border-blue-900 text-sm"
           />
         </div>
@@ -53,17 +53,18 @@
           />
         </div>
 
-        <div v-if="errorMessage" class="text-xs text-red-600 font-semibold">
-          ⚠ {{ errorMessage }}
+        <!-- 实时报错反馈区 -->
+        <div v-if="passwordMismatchError" class="text-xs text-red-600 font-semibold p-2.5 bg-red-50 rounded-lg border border-red-100 animate-shake">
+          ⚠ {{ passwordMismatchError }}
         </div>
 
+        <!-- 注册提交按钮 -->
         <button 
           type="submit" 
-          :disabled="loading"
-          class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-700 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 transition-colors duration-200 disabled:cursor-not-allowed disabled:bg-slate-400"
+          :disabled="isSubmitting"
+          class="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-green-700 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
-          <span v-if="loading">注册中...</span>
-          <span v-else>立即注册</span>
+          {{ isSubmitting ? '正在写入数据库...' : '立即注册' }}
         </button>
       </form>
 
@@ -82,62 +83,53 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/user'
+import { useUserStore } from '../stores/user' // 导入 Pinia 用户库
 
 const router = useRouter()
 const userStore = useUserStore()
 
+// 响应式表单数据
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-const errorMessage = ref('')
-const loading = ref(false)
+const passwordMismatchError = ref('')
+const isSubmitting = ref(false)
 
-const validateEmail = (value) => {
-  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return pattern.test(value)
-}
-
+// 实时校验两次输入的密码是否一致
 const checkPasswordMatch = () => {
   if (confirmPassword.value && password.value !== confirmPassword.value) {
-    errorMessage.value = '两次输入的密码不一致，请重新核对。'
+    passwordMismatchError.value = '两次输入的密码不一致，请重新核对。'
   } else {
-    errorMessage.value = ''
+    passwordMismatchError.value = ''
   }
 }
 
+// 真实的云端注册接口调用逻辑
 const handleRegister = async () => {
-  errorMessage.value = ''
-
-  if (!validateEmail(email.value)) {
-    errorMessage.value = '请输入合法的邮箱格式。'
-    return
-  }
-
-  if (password.value.length < 8) {
-    errorMessage.value = '密码长度不能少于 8 位。'
-    return
-  }
-
+  // 基本前端规则重验
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = '两次输入的密码不一致，请重新核对。'
+    passwordMismatchError.value = '注册失败：两次密码不一致。'
+    return
+  }
+  if (password.value.length < 8) {
+    passwordMismatchError.value = '注册失败：密码长度必须至少为 8 位。'
     return
   }
 
-  loading.value = true
+  passwordMismatchError.value = ''
+  isSubmitting.value = true
 
-  try {
-    const result = await userStore.register(email.value, password.value)
-    if (result.success) {
-      alert('注册成功，请登录')
-      router.push('/login')
-    } else {
-      errorMessage.value = result.message || '注册失败，请稍后重试。'
-    }
-  } catch (err) {
-    errorMessage.value = '网络异常，请稍后重试'
-  } finally {
-    loading.value = false
+  // 调用 Pinia 触发云端注册
+  const res = await userStore.register(email.value, password.value)
+  
+  isSubmitting.value = false
+
+  if (res.success) {
+    alert('账号注册成功！D1 数据库与限额分配表初始化完成。正在前往登录页...')
+    router.push('/login')
+  } else {
+    // 捕获展示后端的具体阻拦原因（例如：“该邮箱已被注册”）
+    passwordMismatchError.value = res.message
   }
 }
 </script>
