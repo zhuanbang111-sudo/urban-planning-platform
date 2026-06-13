@@ -29,7 +29,28 @@
       </div>
     </section>
 
-    <!-- 2. 四个核心功能卡片板块 -->
+    <!-- 2. 统计概览区 -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-10">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">在线工具</p>
+          <p class="mt-4 text-4xl font-bold text-slate-950">{{ toolCount }}</p>
+          <p class="mt-2 text-sm text-slate-500">X 款</p>
+        </div>
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">注册用户</p>
+          <p class="mt-4 text-4xl font-bold text-slate-950">{{ userCount }}</p>
+          <p class="mt-2 text-sm text-slate-500">活跃注册用户</p>
+        </div>
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">持续更新</p>
+          <p class="mt-4 text-4xl font-bold text-slate-950">2024</p>
+          <p class="mt-2 text-sm text-slate-500">上线至今稳定迭代</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 四个核心功能卡片板块 -->
     <section>
       <div class="text-center mb-10">
         <h2 class="text-3xl font-bold text-gray-900">核心功能板块</h2>
@@ -49,7 +70,7 @@
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">规划工具与表格</h3>
             <p class="text-sm text-gray-600 leading-relaxed mb-4">
-              内置专业暴雨强度公式雨水计算工具、给排水管网快速水力学计算模型，整合在线高阶 Excel 规划指标协作表格。
+              {{ toolCount }} 款专业计算工具，持续更新中。
             </p>
           </div>
           <router-link to="/tools" class="text-sm font-semibold text-blue-800 hover:text-blue-600 flex items-center">
@@ -173,9 +194,26 @@
 </template>
 
 <script setup>
-// 首页主要承载导航分流功能，逻辑保持精简
+import { ref, onMounted } from 'vue'
+import { getStats } from '@/utils/api'
+
+const toolCount = ref(0)
+const userCount = ref(0)
+
+const fetchStats = async () => {
+  try {
+    const res = await getStats()
+    toolCount.value = res.tool_count ?? 0
+    userCount.value = res.user_count ?? 0
+  } catch (error) {
+    toolCount.value = 0
+    userCount.value = 0
+    console.warn('获取统计数据失败', error)
+  }
+}
+
+onMounted(fetchStats)
 </script>
 
 <style scoped>
-/* 针对当前页面微调样式 */
 </style>

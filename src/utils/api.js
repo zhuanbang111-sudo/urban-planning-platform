@@ -46,6 +46,18 @@ export const login = (email, password) =>
 export const getMe = () =>
   api.get('/api/me')
 
+export const getTools = (category) => {
+  const params = {} 
+  if (category) params.category = category
+  return api.get('/api/tools', { params })
+}
+
+export const accessTool = (id) =>
+  api.get(`/api/tools/${encodeURIComponent(id)}/access`)
+
+export const getStats = () =>
+  api.get('/api/stats')
+
 export const saveToolHistory = (toolName, inputData, result) =>
   api.post('/api/tool-history', { tool_name: toolName, input_data: inputData, result })
 

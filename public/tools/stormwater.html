@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雨水管网设计计算表</title>
+<style>
+:root {
+  --blue:#185FA5;--blue-light:#E6F1FB;--blue-mid:#378ADD;
+  --green:#3B6D11;--green-light:#EAF3DE;
+  --amber:#854F0B;--amber-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --gray:#5F5E5A;--gray-light:#F1EFE8;
+  --border:#e2e0d8;--border-dark:#c8c6be;
+  --bg:#fff;--bg2:#f8f7f4;--bg3:#f1f0ec;
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#9a9890;
+  --mono:'JetBrains Mono','Consolas',monospace;
+  --sans:-apple-system,'Helvetica Neue',sans-serif;
+  --r:6px;--r2:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);font-size:13px;color:var(--text);background:var(--bg2);min-height:100vh}
+input,select,button{font-family:var(--sans);font-size:13px;color:var(--text)}
+
+/* HEADER */
+.header{background:var(--bg);border-bottom:1px solid var(--border);padding:0 20px;height:52px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:600;color:var(--blue);letter-spacing:-.3px}
+.logo span{font-weight:400;color:var(--text2);font-size:13px;margin-left:6px}
+.header-actions{margin-left:auto;display:flex;gap:8px}
+.btn{padding:6px 14px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);display:flex;align-items:center;gap:5px;transition:all .15s}
+.btn:hover{border-color:var(--border-dark);color:var(--text);background:var(--bg2)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:#0C447C;border-color:#0C447C}
+.btn svg{width:14px;height:14px}
+
+/* MAIN */
+.main{padding:20px;max-width:1400px;margin:0 auto}
+
+/* GLOBAL PARAMS */
+.params-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);padding:16px 20px;margin-bottom:16px}
+.params-title{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:12px}
+.params-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.param-field{display:flex;flex-direction:column;gap:4px}
+.param-label{font-size:11px;color:var(--text2);font-weight:500}
+.param-input{padding:6px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);font-size:13px;font-family:var(--mono);transition:border-color .15s}
+.param-input:focus{outline:none;border-color:var(--blue-mid);background:#fff}
+.param-input:hover{border-color:var(--border-dark)}
+select.param-input{cursor:pointer;padding-right:28px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%235F5E5A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.formula-chip{background:var(--blue-light);border:1px solid #B5D4F4;border-radius:var(--r);padding:5px 10px;font-family:var(--mono);font-size:11px;color:#0C447C;display:flex;align-items:center;gap:6px;white-space:nowrap;margin-top:4px}
+
+/* SUMMARY BAR */
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.summary-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px}
+.summary-val{font-size:20px;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:3px}
+.summary-lbl{font-size:11px;color:var(--text2)}
+.summary-card.ok .summary-val{color:var(--green)}
+.summary-card.warn .summary-val{color:var(--amber)}
+.summary-card.danger .summary-val{color:var(--red)}
+
+/* TABLE */
+.table-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.table-toolbar{padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.table-toolbar-title{font-size:12px;font-weight:600;color:var(--text);margin-right:4px}
+.toolbar-right{margin-left:auto;display:flex;gap:6px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+thead th{background:var(--bg2);border-bottom:1px solid var(--border);padding:7px 8px;text-align:center;font-weight:600;font-size:10px;letter-spacing:.05em;color:var(--text2);white-space:nowrap;position:sticky;top:0}
+thead .th-input{background:#fff8e8;border-bottom:2px solid #EF9F27;color:var(--amber)}
+thead .th-calc{background:var(--bg3);color:var(--text3)}
+thead .th-result{background:var(--blue-light);color:#0C447C}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:hover{background:#fafaf8}
+tbody tr:last-child{border-bottom:none}
+td{padding:4px 3px;text-align:center;vertical-align:middle}
+td.td-num{font-size:11px;color:var(--text3);font-weight:600;width:32px;background:var(--bg2)}
+td.td-input input, td.td-select select{width:100%;padding:5px 7px;border:1px solid transparent;border-radius:4px;background:transparent;text-align:center;font-family:var(--mono);font-size:12px;transition:all .15s}
+td.td-input input:hover, td.td-select select:hover{border-color:var(--border);background:#fff}
+td.td-input input:focus, td.td-select select:focus{outline:none;border-color:var(--blue-mid);background:#fff;box-shadow:0 0 0 2px rgba(55,138,221,.12)}
+td.td-calc{font-family:var(--mono);font-size:11px;color:var(--text2);background:var(--bg3)}
+td.td-result{font-family:var(--mono);font-size:12px;font-weight:600}
+td.status-ok{background:var(--green-light);color:var(--green)}
+td.status-warn{background:var(--amber-light);color:var(--amber)}
+td.status-danger{background:var(--red-light);color:var(--red)}
+td.td-actions{width:52px}
+.row-del{width:24px;height:24px;border:none;background:none;cursor:pointer;color:var(--text3);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s}
+.row-del:hover{color:var(--red);background:var(--red-light)}
+.adj-btn{width:20px;height:16px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-size:10px;border-radius:2px;color:var(--text2);line-height:1;padding:0;transition:all .15s}
+.adj-btn:hover{background:var(--blue-light);color:var(--blue);border-color:#B5D4F4}
+
+/* TABLE FOOTER */
+.table-footer{padding:8px 16px;border-top:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:8px}
+
+/* TOOLTIP & HELPER */
+.tip{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px}
+
+/* COMPLIANCE BADGE */
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px}
+.badge.ok{background:var(--green-light);color:var(--green)}
+.badge.warn{background:var(--amber-light);color:var(--amber)}
+.badge.danger{background:var(--red-light);color:var(--red)}
+
+/* DIAMETER PICKER */
+.d-pick{display:flex;align-items:center;gap:2px;justify-content:center}
+.d-val{font-family:var(--mono);font-size:12px;font-weight:600;min-width:42px;text-align:center}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--r2);width:440px;padding:20px;border:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:14px}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-field label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500}
+.modal-field input{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r);font-family:var(--mono)}
+.modal-field input:focus{outline:none;border-color:var(--blue-mid)}
+.modal-result{margin-top:12px;padding:10px 14px;background:var(--blue-light);border-radius:var(--r);font-family:var(--mono);font-size:12px;color:#0C447C}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+
+@media print{
+  .header .header-actions,.table-toolbar-btn,.row-del,.adj-btn,.table-footer,.modal-bg{display:none!important}
+  body{background:#fff}
+  .main{padding:8px;max-width:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">雨水管网<span>设计计算表</span></div>
+  <div class="header-actions">
+    <button class="btn" onclick="openCModal()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M6 8h4M8 6v4"/></svg>
+      径流系数计算
+    </button>
+    <button class="btn" onclick="window.print()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6V2h8v4M4 12H2V7h12v5h-2M4 9h8v5H4z"/></svg>
+      打印
+    </button>
+    <button class="btn primary" onclick="exportCSV()">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l5 2 5-2M8 2v10M5 9l3 3 3-3"/></svg>
+      导出 CSV
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="params-card">
+    <div class="params-title">全局参数设置</div>
+    <div class="params-grid">
+      <div class="param-field">
+        <label class="param-label">城市 / 暴雨公式</label>
+        <select class="param-input" id="city" onchange="onCityChange()">
+          <option value="shenzhen">深圳市（2015版总公式）</option>
+          <option value="guangzhou">广州市（2023版）</option>
+          <option value="shanghai">上海市（2016版）</option>
+          <option value="beijing_i">北京市I区（中心城）</option>
+          <option value="wuhan">武汉市</option>
+          <option value="chengdu">成都市</option>
+          <option value="nanjing">南京市</option>
+          <option value="custom">自定义参数</option>
+        </select>
+      </div>
+      <div class="param-field">
+        <label class="param-label">设计重现期 P（年）</label>
+        <select class="param-input" id="period" onchange="recalcAll()">
+          <option value="2">2 年一遇</option>
+          <option value="3">3 年一遇</option>
+          <option value="5" selected>5 年一遇</option>
+          <option value="10">10 年一遇</option>
+          <option value="20">20 年一遇</option>
+          <option value="50">50 年一遇</option>
+          <option value="100">100 年一遇</option>
+        </select>
+      </div>
+      <div class="param-field">
+        <label class="param-label">综合径流系数 ψ</label>
+        <input class="param-input" type="number" id="psi" value="0.65" min="0.1" max="0.95" step="0.01" onchange="recalcAll()">
+      </div>
+      <div class="param-field">
+        <label class="param-label">地面集水时间 t₁（min）</label>
+        <input class="param-input" type="number" id="t1" value="10" min="5" max="30" step="1" onchange="recalcAll()">
+      </div>
+      <div class="param-field">
+        <label class="param-label">管材糙率 n</label>
+        <select class="param-input" id="n_global" onchange="recalcAll()">
+          <option value="0.013">0.013 混凝土管</option>
+          <option value="0.011">0.011 HDPE管</option>
+          <option value="0.012">0.012 玻璃钢管</option>
+          <option value="0.014">0.014 陶土管</option>
+        </select>
+      </div>
+      <div class="param-field" id="custom-params" style="display:none;grid-column:span 2">
+        <label class="param-label">自定义公式参数（A₁, C, b, n）</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <input class="param-input" type="number" id="cA1" placeholder="A₁" value="2000" step="0.001" onchange="recalcAll()">
+          <input class="param-input" type="number" id="cC" placeholder="C" value="0.6" step="0.001" onchange="recalcAll()">
+          <input class="param-input" type="number" id="cb" placeholder="b" value="10" step="0.001" onchange="recalcAll()">
+          <input class="param-input" type="number" id="cn" placeholder="n" value="0.6" step="0.001" onchange="recalcAll()">
+        </div>
+      </div>
+    </div>
+    <div class="formula-chip" id="formula-display">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="#0C447C" stroke-width="1.2"/><text x="6" y="9" text-anchor="middle" font-size="8" fill="#0C447C" font-family="serif" font-style="italic">f</text></svg>
+      <span id="formula-text">q = --  [L/(s·ha)]</span>
+    </div>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-card">
+      <div class="summary-val" id="s-pipes">0</div>
+      <div class="summary-lbl">管段总数</div>
+    </div>
+    <div class="summary-card ok">
+      <div class="summary-val" id="s-ok">0</div>
+      <div class="summary-lbl">合规管段</div>
+    </div>
+    <div class="summary-card warn">
+      <div class="summary-val" id="s-warn">0</div>
+      <div class="summary-lbl">警戒管段（h/D 0.70~1.0）</div>
+    </div>
+    <div class="summary-card danger">
+      <div class="summary-val" id="s-danger">0</div>
+      <div class="summary-lbl">超载管段（h/D &gt; 1.0）</div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <span class="table-toolbar-title">管段计算表</span>
+      <span class="tip">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M6 5v4M6 4h.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        白底=输入 · 灰底=自动计算 · Tab键跳格 · Enter键新增行
+      </span>
+      <div class="toolbar-right">
+        <button class="btn table-toolbar-btn" onclick="addRow()">+ 新增管段</button>
+        <button class="btn table-toolbar-btn" onclick="clearAll()" style="color:#a32d2d">清空</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="calc-table">
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th class="th-input" style="width:72px">管段编号</th>
+            <th class="th-input" style="width:72px">上游接入</th>
+            <th class="th-input" style="width:70px">本段 F<br>(ha)</th>
+            <th class="th-calc" style="width:70px">累计 F<br>(ha)</th>
+            <th class="th-input" style="width:70px">坡度 i<br>(%)</th>
+            <th class="th-calc" style="width:66px">历时 t<br>(min)</th>
+            <th class="th-calc" style="width:76px">q<br>[L/(s·ha)]</th>
+            <th class="th-calc" style="width:76px">设计 Q<br>(L/s)</th>
+            <th class="th-result" style="width:90px">推荐管径<br>(mm)</th>
+            <th class="th-result" style="width:70px">满流 Q<br>(L/s)</th>
+            <th class="th-result" style="width:60px">h/D<br>充满度</th>
+            <th class="th-result" style="width:70px">流速 v<br>(m/s)</th>
+            <th class="th-result" style="width:58px">合规</th>
+            <th style="width:52px"></th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap" style="display:none">
+      </div>
+
+    <div class="table-footer">
+      <span class="tip">颜色说明：</span>
+      <span class="badge ok">h/D ≤ 0.70 合规</span>
+      <span class="badge warn">0.70–1.00 警戒</span>
+      <span class="badge danger">&gt; 1.00 超载</span>
+      <span class="tip" style="margin-left:12px">流速：0.75–3.0 m/s 为合规范围</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-bg" id="c-modal">
+  <div class="modal">
+    <div class="modal-title">径流系数加权计算器</div>
+    <div class="modal-grid">
+      <div class="param-field">
+        <label class="param-label">硬质铺装面积（ha）</label>
+        <input class="param-input" type="number" id="c-hard" value="0" min="0" step="0.1" oninput="calcC()">
+      </div>
+      <div class="param-field">
+        <label class="param-label">ψ = 0.85</label>
+      </div>
+      <div class="param-field">
+        <label class="param-label">居住区面积（ha）</label>
+        <input class="param-input" type="number" id="c-res" value="0" min="0" step="0.1" oninput="calcC()">
+      </div>
+      <div class="param-field">
+        <label class="param-label">ψ = 0.60</label>
+      </div>
+      <div class="param-field">
+        <label class="param-label">绿地面积（ha）</label>
+        <input class="param-input" type="number" id="c-green" value="0" min="0" step="0.1" oninput="calcC()">
+      </div>
+      <div class="param-field">
+        <label class="param-label">ψ = 0.25</label>
+      </div>
+      <div class="param-field">
+        <label class="param-label">商业区面积（ha）</label>
+        <input class="param-input" type="number" id="c-comm" value="0" min="0" step="0.1" oninput="calcC()">
+      </div>
+      <div class="param-field">
+        <label class="param-label">ψ = 0.80</label>
+      </div>
+    </div>
+    <div class="modal-result" id="c-result">请输入各类型面积</div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeCModal()">取消</button>
+      <button class="btn primary" onclick="applyCResult()">应用到全局 ψ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FORMULAS = {
+  shenzhen:  {name:'深圳市（2015版总公式）', A1:1450.239, C:0.594, b:11.13, n:0.555},
+  guangzhou: {name:'广州市（2023版近似）',    A1:3618.427, C:0.533, b:11.259,n:0.750},
+  shanghai:  {name:'上海市（2016版）',         A1:1600.129, C:0.846, b:7.000, n:0.630},
+  beijing_i: {name:'北京市I区（中心城）',      A1:2747.0,   C:0.640, b:13.00, n:0.712},
+  wuhan:     {name:'武汉市（2016版）',          A1:983.928,  C:0.520, b:3.000, n:0.535},
+  chengdu:   {name:'成都市（2016版）',          A1:1038.186, C:0.830, b:6.000, n:0.584},
+  nanjing:   {name:'南京市（2019版）',          A1:1271.000, C:0.670, b:5.700, n:0.587},
+  custom:    {name:'自定义',                    A1:null, C:null, b:null, n:null}
+};
+
+const DN_LIST = [200,250,300,400,500,600,800,1000,1200,1500,2000];
+let rows = [];
+let nextId = 1;
+let cResult = null;
+
+function getFormula() {
+  const cityEl = document.getElementById('city');
+  const city = cityEl ? cityEl.value : 'shenzhen';
+  if (city === 'custom') {
+    return {
+      A1: parseFloat(document.getElementById('cA1').value)||2000,
+      C:  parseFloat(document.getElementById('cC').value)||0.6,
+      b:  parseFloat(document.getElementById('cb').value)||10,
+      n:  parseFloat(document.getElementById('cn').value)||0.6
+    };
+  }
+  return FORMULAS[city];
+}
+
+function onCityChange() {
+  const cityEl = document.getElementById('city');
+  if(!cityEl) return;
+  const city = cityEl.value;
+  
+  const customParamsPanel = document.getElementById('custom-params');
+  if (customParamsPanel) {
+    customParamsPanel.style.display = city === 'custom' ? 'block' : 'none';
+  }
+  
+  onCityChange_silent();
+  recalcAll();
+}
+
+function onCityChange_silent() {
+  const cityEl = document.getElementById('city');
+  const txtEl = document.getElementById('formula-text');
+  if (!cityEl || !txtEl) return;
+  
+  const city = cityEl.value;
+  if(city === 'custom') {
+    const f = getFormula();
+    txtEl.textContent = `q = ${f.A1} × (1 + ${f.C}·lgP) / (t + ${f.b})^${f.n} [L/(s·ha)]`;
+    return;
+  }
+  const f = FORMULAS[city];
+  if (f && f.A1) {
+    txtEl.textContent = `q = ${f.A1} × (1 + ${f.C}·lgP) / (t + ${f.b})^${f.n} [L/(s·ha)]`;
+  }
+}
+
+function calcQ(t, P) {
+  const f = getFormula();
+  if (!f || !f.A1) return 0;
+  return f.A1 * (1 + f.C * Math.log10(P)) / Math.pow(t + f.b, f.n);
+}
+
+function manning(D_m, i, n_val) {
+  const r = D_m / 4;
+  const A = Math.PI * D_m * D_m / 4;
+  return (1/n_val) * A * Math.pow(r, 2/3) * Math.pow(i/100, 0.5);
+}
+
+function recommendDN(Q_ls, i_pct, n_val) {
+  const Q_m3s = Q_ls / 1000;
+  for (const dn of DN_LIST) {
+    const qfull = manning(dn/1000, i_pct, n_val);
+    if (qfull >= Q_m3s * 0.7) return dn;
+  }
+  return DN_LIST[DN_LIST.length - 1];
+}
+
+function calcRow(row, cumF, upstreamQ) {
+  const P   = parseFloat(document.getElementById('period').value) || 5;
+  const psi = parseFloat(document.getElementById('psi').value) || 0.65;
+  const t1  = parseFloat(document.getElementById('t1').value) || 10;
+  const n_g = parseFloat(document.getElementById('n_global').value) || 0.013;
+  const F   = parseFloat(row.f) || 0;
+  const i   = parseFloat(row.i) || 1.0;
+  
+  // 修正后的汇流面积：上游传递过来的累计面积 + 本段自产面积
+  const totalF = cumF + F; 
+  let D = row.d_manual || 0;
+
+  let t2 = 0, q = 0, Q = 0, Q_full = 0, v = 0, hD = 0;
+
+  for (let iter = 0; iter < 4; iter++) {
+    const t = t1 + t2;
+    q = calcQ(t, P);
+    Q = q * psi * totalF;
+    const Qupstream = upstreamQ || 0;
+    const Qtotal = Q + Qupstream;
+
+    const D_try = D > 0 ? D : recommendDN(Qtotal, i, n_g) / 1000;
+    Q_full = manning(D_try, i, n_g) * 1000;
+    v = Q_full / (Math.PI * D_try * D_try / 4 * 1000) * (Math.min(Qtotal / Q_full, 1) || 0);
+    
+    const L_assume = 100; // 假设标准管段长度
+    t2 = Math.max(0, (v > 0 ? L_assume / v / 60 : 0));
+  }
+
+  const t = t1 + t2;
+  q = calcQ(t, P);
+  const Q_raw = q * psi * totalF + (upstreamQ || 0);
+  const D_rec = D > 0 ? D : recommendDN(Q_raw, i, n_g);
+  Q_full = manning(D_rec / 1000, i, n_g) * 1000;
+  hD = Q_raw / Q_full;
+  v = (Q_raw / 1000) / (Math.PI * (D_rec/1000) * (D_rec/1000) / 4);
+
+  return {
+    cumF: totalF,
+    t: parseFloat(t.toFixed(1)),
+    q: parseFloat(q.toFixed(1)),
+    Q: parseFloat(Q_raw.toFixed(1)),
+    D_rec,
+    Q_full: parseFloat(Q_full.toFixed(1)),
+    hD: parseFloat(hD.toFixed(3)),
+    v: parseFloat(v.toFixed(2))
+  };
+}
+
+function getStatus(hD, v) {
+  if (hD > 1.0) return 'danger';
+  if (hD > 0.70) return 'warn';
+  return 'ok';
+}
+
+function recalcAll() {
+  onCityChange_silent();
+  const tbody = document.getElementById('table-body');
+  if(!tbody) return;
+  const rowEls = Array.from(tbody.rows);
+
+  let ok=0, warn=0, danger=0;
+
+  rowEls.forEach((tr) => {
+    const rowId = parseInt(tr.dataset.id);
+    const row = rows.find(r => r.id === rowId);
+    if (!row) return;
+
+    const upId = row.upstream;
+    let cumF = 0, upQ = 0;
+    if (upId) {
+      const upIdx = rows.findIndex(r => r.id === parseInt(upId));
+      if (upIdx >= 0) {
+        const upCalc = rows[upIdx]._calc;
+        if (upCalc) { 
+          cumF = upCalc.cumF; // 修正逻辑缺陷：上游累计汇水面积需要向下传递
+          upQ = upCalc.Q; 
+        }
+      }
+    }
+
+    const calc = calcRow(row, cumF, upQ);
+    row._calc = calc;
+
+    tr.querySelector('.td-cumf').textContent = calc.cumF.toFixed(2);
+    tr.querySelector('.td-t').textContent = calc.t.toFixed(1);
+    tr.querySelector('.td-q').textContent = calc.q.toFixed(1);
+    tr.querySelector('.td-Q').textContent = calc.Q.toFixed(1);
+    tr.querySelector('.td-Qfull').textContent = calc.Q_full.toFixed(1);
+    tr.querySelector('.td-hD').textContent = calc.hD.toFixed(3);
+    tr.querySelector('.td-v').textContent = calc.v.toFixed(2);
+
+    const status = getStatus(calc.hD, calc.v);
+    if (status === 'ok') ok++;
+    else if (status === 'warn') warn++;
+    else danger++;
+
+    ['td-hD','td-v','td-Q','td-Qfull'].forEach(cls => {
+      tr.querySelector('.'+cls).className = 'td-calc status-'+status;
+    });
+
+    const badge = tr.querySelector('.td-status');
+    badge.className = 'td-result';
+    badge.innerHTML = `<span class="badge ${status}">${status==='ok'?'合规':status==='warn'?'警戒':'超载'}</span>`;
+
+    const dCell = tr.querySelector('.td-drec');
+    dCell.className = 'td-result status-'+status;
+    const dVal = dCell.querySelector('.d-val');
+    if (dVal) dVal.textContent = 'DN'+calc.D_rec;
+  });
+
+  document.getElementById('s-pipes').textContent = rows.length;
+  document.getElementById('s-ok').textContent = ok;
+  document.getElementById('s-warn').textContent = warn;
+  document.getElementById('s-danger').textContent = danger;
+}
+
+function buildUpstreamSelect(currentId) {
+  let opts = '<option value="">无（源头管）</option>';
+  rows.forEach(r => {
+    if (r.id !== currentId) {
+      opts += `<option value="${r.id}">${r.name||'P-'+r.id}</option>`;
+    }
+  });
+  return opts;
+}
+
+function addRow(data) {
+  const id = nextId++;
+  const row = data || {
+    id, name: 'P-'+id, upstream:'', f:'', i:'1.0', d_manual:0, _calc:null
+  };
+  row.id = row.id || id;
+  rows.push(row);
+
+  const tbody = document.getElementById('table-body');
+  if(!tbody) return;
+  const tr = document.createElement('tr');
+  tr.dataset.id = row.id;
+
+  tr.innerHTML = `
+    <td class="td-num">${rows.length}</td>
+    <td class="td-input"><input type="text" value="${row.name}" placeholder="P-${row.id}" onchange="updateRow(${row.id},'name',this.value)"></td>
+    <td class="td-select"><select onchange="updateRow(${row.id},'upstream',this.value)">${buildUpstreamSelect(row.id)}</select></td>
+    <td class="td-input"><input type="number" value="${row.f}" placeholder="0.00" step="0.1" min="0" onchange="updateRow(${row.id},'f',this.value)" onkeydown="handleKey(event,${row.id},'f')"></td>
+    <td class="td-calc td-cumf">—</td>
+    <td class="td-input"><input type="number" value="${row.i}" placeholder="1.0" step="0.1" min="0.01" onchange="updateRow(${row.id},'i',this.value)"></td>
+    <td class="td-calc td-t">—</td>
+    <td class="td-calc td-q">—</td>
+    <td class="td-calc td-Q">—</td>
+    <td class="td-result td-drec">
+      <div class="d-pick">
+        <button class="adj-btn" onclick="adjDN(${row.id},-1)">▼</button>
+        <span class="d-val">—</span>
+        <button class="adj-btn" onclick="adjDN(${row.id},1)">▲</button>
+      </div>
+    </td>
+    <td class="td-calc td-Qfull">—</td>
+    <td class="td-calc td-hD">—</td>
+    <td class="td-calc td-v">—</td>
+    <td class="td-result td-status">—</td>
+    <td class="td-actions"><button class="row-del" onclick="delRow(${row.id})" title="删除">✕</button></td>
+  `;
+
+  if (row.upstream) {
+    const sel = tr.querySelector('select');
+    if(sel) sel.value = row.upstream;
+  }
+
+  tbody.appendChild(tr);
+  refreshUpstreamSelects();
+  recalcAll();
+
+  const firstInput = tr.querySelector('input[type=number]');
+  if (!data && firstInput) firstInput.focus();
+}
+
+function updateRow(id, field, value) {
+  const row = rows.find(r => r.id === id);
+  if (row) {
+    row[field] = value;
+    if (field === 'name') refreshUpstreamSelects();
+    recalcAll();
+  }
+}
+
+function adjDN(id, dir) {
+  const row = rows.find(r => r.id === id);
+  if (!row) return;
+  const cur = row.d_manual || (row._calc && row._calc.D_rec) || 300;
+  const idx = DN_LIST.indexOf(cur);
+  const newIdx = Math.max(0, Math.min(DN_LIST.length-1, idx + dir));
+  row.d_manual = DN_LIST[newIdx];
+  recalcAll();
+}
+
+function delRow(id) {
+  const idx = rows.findIndex(r => r.id === id);
+  if (idx >= 0) {
+    rows.splice(idx, 1);
+    renderTable();
+  }
+}
+
+function renderTable() {
+  const tbody = document.getElementById('table-body');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  const existing = [...rows];
+  rows = [];
+  nextId = 1; 
+  existing.forEach(r => {
+    r.id = nextId; // 重置内部分配ID以防断档
+    addRow(r);
+  });
+}
+
+function refreshUpstreamSelects() {
+  const tbody = document.getElementById('table-body');
+  if(!tbody) return;
+  Array.from(tbody.rows).forEach(tr => {
+    const id = parseInt(tr.dataset.id);
+    const row = rows.find(r => r.id === id);
+    const sel = tr.querySelector('select');
+    if (!sel || !row) return;
+    const cur = sel.value;
+    sel.innerHTML = buildUpstreamSelect(id);
+    sel.value = row.upstream || '';
+  });
+}
+
+function handleKey(e, id, field) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    addRow();
+  }
+}
+
+function clearAll() {
+  if (confirm('确认清空所有管段数据？')) {
+    rows = []; nextId = 1;
+    const tbody = document.getElementById('table-body');
+    if(tbody) tbody.innerHTML = '';
+    recalcAll();
+  }
+}
+
+function exportCSV() {
+  const P  = document.getElementById('period').value;
+  const psi= document.getElementById('psi').value;
+  const city = document.getElementById('city').options[document.getElementById('city').selectedIndex].text;
+
+  let csv = `雨水管网设计计算表\n`;
+  csv += `城市: ${city}, 重现期 P: ${P}年, 径流系数 ψ: ${psi}\n\n`;
+  csv += '管段编号,上游管段,本段F(ha),累计F(ha),坡度i(%),历时t(min),q[L/(s·ha)],设计Q(L/s),推荐管径(mm),满流Q(L/s),充满度h/D,流速v(m/s),合规状态\n';
+
+  rows.forEach(row => {
+    const c = row._calc;
+    if (!c) return;
+    const upName = row.upstream ? (rows.find(r=>r.id==row.upstream)||{}).name||'' : '无';
+    const status = getStatus(c.hD, c.v);
+    csv += `${row.name},${upName},${row.f||0},${c.cumF},${row.i},${c.t},${c.q},${c.Q},DN${c.D_rec},${c.Q_full},${c.hD},${c.v},${status==='ok'?'合规':status==='warn'?'警戒':'超载'}\n`;
+  });
+
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `雨水管网计算表_P${P}年.csv`;
+  a.click();
+}
+
+function openCModal() {
+  document.getElementById('c-modal').classList.add('open');
+}
+function closeCModal() {
+  document.getElementById('c-modal').classList.remove('open');
+}
+function calcC() {
+  const hard  = parseFloat(document.getElementById('c-hard').value)||0;
+  const res   = parseFloat(document.getElementById('c-res').value)||0;
+  const green = parseFloat(document.getElementById('c-green').value)||0;
+  const comm  = parseFloat(document.getElementById('c-comm').value)||0;
+  const total = hard+res+green+comm;
+  if (total <= 0) {
+    document.getElementById('c-result').textContent = '请输入各类型面积';
+    cResult = null; return;
+  }
+  const weighted = (hard*0.85 + res*0.60 + green*0.25 + comm*0.80) / total;
+  cResult = parseFloat(weighted.toFixed(3));
+  document.getElementById('c-result').textContent =
+    `加权径流系数 ψ = (${hard}×0.85 + ${res}×0.60 + ${green}×0.25 + ${comm}×0.80) / ${total.toFixed(2)} = ${cResult}`;
+}
+function applyCResult() {
+  if (cResult) {
+    document.getElementById('psi').value = cResult;
+    recalcAll();
+    closeCModal();
+  }
+}
+
+document.getElementById('c-modal').addEventListener('click', function(e){
+  if (e.target === this) closeCModal();
+});
+
+// 初始化阶段：先更新一次公式 DOM 文本，再安全地填充初始行数据
+onCityChange_silent();
+addRow({id:nextId++, name:'P-1', upstream:'', f:'2.50', i:'1.0', d_manual:0});
+addRow({id:nextId++, name:'P-2', upstream:'1', f:'1.80', i:'0.8', d_manual:0});
+addRow({id:nextId++, name:'P-3', upstream:'2', f:'0',    i:'0.5', d_manual:0});
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // 导入页面组件
 import Home from '../views/Home.vue'
-import Tools from '../views/Tools.vue'
+import ToolsView from '../views/ToolsView.vue'
 import Policy from '../views/Policy.vue'
 import Library from '../views/Library.vue'
 import Knowledge from '../views/Knowledge.vue'
@@ -24,10 +24,10 @@ const routes = [
   {
     path: '/tools',
     name: 'Tools',
-    component: Tools,
+    component: ToolsView,
     meta: {
-      title: '规划工具与表格 - 城市规划研究平台',
-      requiresAuth: true // 需要登录才能访问
+      title: '规划工具库 - 城市规划研究平台',
+      requiresAuth: false
     }
   },
   {
