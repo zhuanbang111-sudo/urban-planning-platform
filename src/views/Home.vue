@@ -1,6 +1,6 @@
 <!-- 保存路径: src/views/Home.vue -->
 <template>
-  <div class="space-y-16">
+  <div class="space-y-12">
     
     <!-- 1. Hero 区域 (主视觉区) -->
     <section class="bg-gradient-to-r from-[#1e3a5f] to-[#12253f] text-white rounded-2xl shadow-xl overflow-hidden">
@@ -29,24 +29,26 @@
       </div>
     </section>
 
-    <!-- 2. 统计概览区 -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-10">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">在线工具</p>
-          <p class="mt-4 text-4xl font-bold text-slate-950">{{ toolCount }}</p>
-          <p class="mt-2 text-sm text-slate-500">X 款</p>
-        </div>
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">注册用户</p>
-          <p class="mt-4 text-4xl font-bold text-slate-950">{{ userCount }}</p>
-          <p class="mt-2 text-sm text-slate-500">活跃注册用户</p>
-        </div>
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p class="text-sm font-medium uppercase tracking-[0.2em] text-slate-500">持续更新</p>
-          <p class="mt-4 text-4xl font-bold text-slate-950">2024</p>
-          <p class="mt-2 text-sm text-slate-500">上线至今稳定迭代</p>
-        </div>
+    <!-- 2. 新增：实时数字统计指标面板 -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white border border-gray-100 rounded-xl p-6 shadow-sm text-center">
+      <!-- 统计项 1 -->
+      <div class="flex flex-col justify-center py-2">
+        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">在线工具</p>
+        <p class="mt-1 text-3xl font-extrabold text-blue-900 animate-pulse-light">
+          {{ loading ? '加载中...' : `${toolCount} 款` }}
+        </p>
+      </div>
+      <!-- 统计项 2 (带左右边线分割) -->
+      <div class="flex flex-col justify-center border-y md:border-y-0 md:border-x border-gray-100 py-4 md:py-2">
+        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">注册用户</p>
+        <p class="mt-1 text-3xl font-extrabold text-blue-900 animate-pulse-light">
+          {{ loading ? '加载中...' : `${userCount} 人` }}
+        </p>
+      </div>
+      <!-- 统计项 3 -->
+      <div class="flex flex-col justify-center py-2">
+        <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">持续更新</p>
+        <p class="mt-1 text-3xl font-extrabold text-blue-900">2024 年上线</p>
       </div>
     </section>
 
@@ -59,8 +61,11 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        <!-- 卡片 1: 规划工具与表格 -->
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between">
+        <!-- 卡片 1: 规划工具与表格 (已绑定动态统计数并链接跳转) -->
+        <router-link 
+          to="/tools"
+          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between"
+        >
           <div>
             <div class="h-12 w-12 bg-blue-50 rounded-lg flex items-center justify-center text-blue-900 mb-4">
               <!-- 规划计算器图标 -->
@@ -68,18 +73,24 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">规划工具与表格</h3>
-            <p class="text-sm text-gray-600 leading-relaxed mb-4">
-              {{ toolCount }} 款专业计算工具，持续更新中。
+            <h3 class="text-lg font-bold text-gray-900 mb-2">规划工具库</h3>
+            <p class="text-sm font-semibold text-blue-900 mb-2">
+              {{ loading ? '工具同步中...' : `${toolCount} 款专业计算工具，持续更新中` }}
+            </p>
+            <p class="text-sm text-gray-500 leading-relaxed mb-4">
+              内置专业雨水径流计算、水力学参数演进公式，整合在线协作表格。
             </p>
           </div>
-          <router-link to="/tools" class="text-sm font-semibold text-blue-800 hover:text-blue-600 flex items-center">
+          <span class="text-sm font-semibold text-blue-800 flex items-center">
             开始计算 <span class="ml-1">→</span>
-          </router-link>
-        </div>
+          </span>
+        </router-link>
 
         <!-- 卡片 2: 政策文件分析 -->
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between">
+        <router-link 
+          to="/policy"
+          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between"
+        >
           <div>
             <div class="h-12 w-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-900 mb-4">
               <!-- 政策AI解析图标 -->
@@ -88,17 +99,20 @@
               </svg>
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">政策文件分析</h3>
-            <p class="text-sm text-gray-600 leading-relaxed mb-4">
+            <p class="text-sm text-gray-500 leading-relaxed mb-4">
               支持上传国土空间规划、海绵城市、绿色基础设施等多类型 PDF 政策，依托大模型 AI 技术，快速生成条文提炼。
             </p>
           </div>
-          <router-link to="/policy" class="text-sm font-semibold text-indigo-800 hover:text-indigo-600 flex items-center">
+          <span class="text-sm font-semibold text-indigo-800 flex items-center">
             开始解析 <span class="ml-1">→</span>
-          </router-link>
-        </div>
+          </span>
+        </router-link>
 
         <!-- 卡片 3: 标准规范资料库 -->
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between">
+        <router-link 
+          to="/library"
+          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between"
+        >
           <div>
             <div class="h-12 w-12 bg-green-50 rounded-lg flex items-center justify-center text-green-900 mb-4">
               <!-- 规范资料库图标 -->
@@ -107,17 +121,20 @@
               </svg>
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">标准规范资料库</h3>
-            <p class="text-sm text-gray-600 leading-relaxed mb-4">
+            <p class="text-sm text-gray-500 leading-relaxed mb-4">
               收录最新国家、行业、地方级城市规划与防灾避险、给排水设计规范。实行访客/用户/管理员三级下载权限控制。
             </p>
           </div>
-          <router-link to="/library" class="text-sm font-semibold text-green-800 hover:text-green-600 flex items-center">
+          <span class="text-sm font-semibold text-green-800 flex items-center">
             去资料库 <span class="ml-1">→</span>
-          </router-link>
-        </div>
+          </span>
+        </router-link>
 
         <!-- 卡片 4: 规划知识库 -->
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between">
+        <router-link 
+          to="/knowledge"
+          class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-6 flex flex-col justify-between"
+        >
           <div>
             <div class="h-12 w-12 bg-yellow-50 rounded-lg flex items-center justify-center text-yellow-800 mb-4">
               <!-- 规划知识库图标 -->
@@ -126,19 +143,19 @@
               </svg>
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">规划知识库</h3>
-            <p class="text-sm text-gray-600 leading-relaxed mb-4">
+            <p class="text-sm text-gray-500 leading-relaxed mb-4">
               沉淀城市基础设施、城市更新及韧性城市设计的前沿学术笔记。提供强力检索，实现规划前置学术调研。
             </p>
           </div>
-          <router-link to="/knowledge" class="text-sm font-semibold text-yellow-800 hover:text-yellow-600 flex items-center">
+          <span class="text-sm font-semibold text-yellow-800 flex items-center">
             进入知识库 <span class="ml-1">→</span>
-          </router-link>
-        </div>
+          </span>
+        </router-link>
 
       </div>
     </section>
 
-    <!-- 3. 平台三大特点区 -->
+    <!-- 4. 平台三大特点区 -->
     <section class="bg-gray-100 rounded-2xl p-8 sm:p-12 border border-gray-200">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         
@@ -146,7 +163,7 @@
         <div class="flex items-start space-x-4">
           <div class="flex-shrink-0 h-10 w-10 bg-blue-900 text-white rounded-full flex items-center justify-center">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138z" />
             </svg>
           </div>
           <div>
@@ -195,25 +212,35 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getStats } from '@/utils/api'
+import { getStats } from '../utils/api' // 引入之前写好的公开统计接口
 
+// 响应式数据
 const toolCount = ref(0)
 const userCount = ref(0)
+const loading = ref(true)
 
-const fetchStats = async () => {
+// 生命周期挂载：从 Cloudflare 边缘端同步真实统计指标
+onMounted(async () => {
   try {
     const res = await getStats()
-    toolCount.value = res.tool_count ?? 0
-    userCount.value = res.user_count ?? 0
-  } catch (error) {
-    toolCount.value = 0
-    userCount.value = 0
-    console.warn('获取统计数据失败', error)
+    toolCount.value = res.tool_count || 0
+    userCount.value = res.user_count || 0
+  } catch (err) {
+    console.error('获取首页统计数据失败:', err)
+  } finally {
+    loading.value = false
   }
-}
-
-onMounted(fetchStats)
+})
 </script>
 
 <style scoped>
+/* 骨架屏淡雅微调加载呼吸动画 */
+.animate-pulse-light {
+  animation: pulseLight 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseLight {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .7; }
+}
 </style>

@@ -2,263 +2,333 @@
 <template>
   <div class="space-y-6">
     
-    <!-- 1. 页面标题 + 面包屑导航 -->
-    <div class="border-b border-gray-200 pb-4">
-      <nav class="text-sm text-gray-500 mb-2 flex items-center space-x-2">
-        <router-link to="/" class="hover:text-blue-900">首页</router-link>
-        <span>&gt;</span>
-        <span class="text-gray-800 font-medium">规划工具与表格</span>
-      </nav>
-      <h1 class="text-3xl font-bold text-gray-900">规划工具与表格</h1>
-      <p class="text-sm text-gray-600 mt-1">集成暴雨雨水计算工具与专业规划协作表格，助力市政工程方案设计。</p>
-    </div>
+    <!-- ========================================================= -->
+    <!-- 【状态 1：工具列表状态】 -->
+    <!-- ========================================================= -->
+    <div v-if="!activeTool" class="space-y-6 animate-fade-in">
+      <!-- 页面标题与面包屑 -->
+      <div class="border-b border-gray-200 pb-4">
+        <nav class="text-sm text-gray-500 mb-2 flex items-center space-x-2">
+          <router-link to="/" class="hover:text-blue-900">首页</router-link>
+          <span>&gt;</span>
+          <span class="text-gray-800 font-medium">规划工具库</span>
+        </nav>
+        <h1 class="text-3xl font-bold text-gray-900">规划工具库</h1>
+        <p class="text-sm text-gray-600 mt-1">内置市政、道路及给排水高阶规划计算工具。登录后可解锁保存计算记录权限。</p>
+      </div>
 
-    <!-- 2. Tab 切换栏 -->
-    <div class="border-b border-gray-200">
-      <nav class="flex space-x-8" aria-label="Tabs">
-        <!-- 规划计算工具 Tab -->
-        <button 
-          @click="activeTab = 'calculators'"
+      <!-- 分类筛选 Tab 栏 -->
+      <div class="border-b border-gray-100 pb-1">
+        <nav class="flex space-x-4 overflow-x-auto pb-2" aria-label="Tabs">
+          <button
+            v-for="cat in categories"
+            :key="cat"
+            @click="handleCategoryChange(cat)"
+            :class="[
+              selectedCategory === cat
+                ? 'bg-blue-900 text-white font-semibold'
+                : 'bg-white text-gray-600 hover:text-blue-900 hover:bg-gray-100 border border-gray-200'
+            ]"
+            class="px-4 py-2 rounded-lg text-sm transition-all duration-200 whitespace-nowrap focus:outline-none"
+          >
+            {{ cat }}
+          </button>
+        </nav>
+      </div>
+
+      <!-- 工具加载提示 -->
+      <div v-if="loading" class="flex flex-col items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mb-3"></div>
+        <p class="text-sm text-gray-500">正在调取云端工具数据，请稍候...</p>
+      </div>
+
+      <!-- 无工具占位图 -->
+      <div v-else-if="filteredTools.length === 0" class="text-center py-16 bg-white border border-gray-100 rounded-xl shadow-sm">
+        <span class="text-4xl">🛠</span>
+        <h3 class="text-lg font-bold text-gray-800 mt-4">该类目下暂无上线工具</h3>
+        <p class="text-sm text-gray-500 mt-1">请尝试切换其他分类或联系管理员反馈需求。</p>
+      </div>
+
+      <!-- 工具卡片网格 -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-for="tool in filteredTools"
+          :key="tool.id"
+          @click="handleToolClick(tool)"
           :class="[
-            activeTab === 'calculators' 
-              ? 'border-blue-900 text-blue-900 font-bold' 
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            tool.status === 'active' 
+              ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer bg-white' 
+              : 'bg-gray-50 opacity-70 cursor-not-allowed'
           ]"
-          class="py-4 px-1 border-b-2 font-medium text-base focus:outline-none transition-all duration-200"
+          class="border border-gray-200 rounded-xl p-6 transition-all duration-300 flex flex-col justify-between"
         >
-          规划计算工具
-        </button>
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <!-- 大号 Emoji 图标 -->
+              <span class="text-3xl p-2 bg-gray-100 rounded-lg">{{ tool.icon || '🛠' }}</span>
+              <!-- 分类标签 -->
+              <span class="px-2 py-0.5 text-xs rounded bg-blue-50 text-blue-900 font-medium">
+                {{ tool.category }}
+              </span>
+            </div>
+            
+            <h3 class="text-lg font-bold text-gray-900 mb-2">{{ tool.name }}</h3>
+            <!-- 限制最多显示三行描述 -->
+            <p class="text-sm text-gray-500 leading-relaxed line-clamp-3 mb-6">
+              {{ tool.description }}
+            </p>
+          </div>
 
-        <!-- 规划表格 Tab -->
-        <button 
-          @click="activeTab = 'tables'"
-          :class="[
-            activeTab === 'tables' 
-              ? 'border-blue-900 text-blue-900 font-bold' 
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          ]"
-          class="py-4 px-1 border-b-2 font-medium text-base focus:outline-none transition-all duration-200"
-        >
-          规划表格
-        </button>
-      </nav>
+          <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+            <!-- 上线状态 -->
+            <span 
+              :class="[
+                tool.status === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-gray-200 text-gray-600'
+              ]"
+              class="px-2.5 py-0.5 text-xs font-semibold rounded-full"
+            >
+              {{ tool.status === 'active' ? '已上线' : '即将上线' }}
+            </span>
+            <span class="text-xs font-semibold text-blue-900 flex items-center hover:underline">
+              {{ tool.status === 'active' ? '立即进入' : '敬请期待' }} <span class="ml-1">→</span>
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- 3. Tab1 内容：工具卡片网格 -->
-    <div v-show="activeTab === 'calculators'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-4 animate-fade-in">
+    <!-- ========================================================= -->
+    <!-- 【状态 2：工具运行状态 (iframe 内嵌)】 -->
+    <!-- ========================================================= -->
+    <div v-else class="flex flex-col border border-gray-200 rounded-2xl overflow-hidden shadow-lg animate-fade-in">
       
-      <!-- 卡片1：雨水径流计算 (已上线) -->
-      <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="h-12 w-12 bg-blue-50 text-blue-900 rounded-lg flex items-center justify-center">
-              <!-- 雨水滴图标 -->
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
-            </div>
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">已上线</span>
-          </div>
-          <h3 class="text-lg font-bold text-gray-900 mb-2">雨水径流计算</h3>
-          <p class="text-sm text-gray-600 leading-relaxed mb-6">
-            基于中国市政雨水设计规范，输入暴雨强度公式参数、集水面积、径流系数及汇流时间，快速演算雨水设计流量及调蓄规模。
-          </p>
-        </div>
+      <!-- 顶部固定工具栏 -->
+      <div class="bg-gray-900 text-white px-4 py-3 flex items-center justify-between z-10">
         <button 
-          @click="navigateToStormwater"
-          class="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white font-medium rounded-lg shadow-sm text-center text-sm transition-colors duration-200"
+          @click="exitTool" 
+          class="flex items-center text-sm font-semibold text-gray-300 hover:text-white transition-colors"
         >
-          立即使用
+          <span class="mr-2">←</span> 返回工具列表
         </button>
+        
+        <h2 class="text-base font-bold text-white tracking-wider flex items-center space-x-2">
+          <span class="text-lg">{{ activeTool.icon }}</span>
+          <span>{{ activeTool.name }}</span>
+        </h2>
+
+        <div>
+          <!-- 如果是外部链接，才提供“在新窗口打开”的按钮 -->
+          <button 
+            v-if="activeTool.tool_type === 'iframe_external'"
+            @click="openInNewWindow"
+            class="px-3 py-1 bg-blue-800 hover:bg-blue-700 text-xs font-bold rounded text-white transition-all shadow-sm"
+          >
+            在新窗口打开 ↗
+          </button>
+          <div v-else class="w-20"></div> <!-- 占位保持排版对称 -->
+        </div>
       </div>
 
-      <!-- 卡片2：管网水力计算 (即将上线) -->
-      <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 flex flex-col justify-between opacity-75">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="h-12 w-12 bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center">
-              <!-- 管网管道图标 -->
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547" />
-              </svg>
-            </div>
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600">即将上线</span>
-          </div>
-          <h3 class="text-lg font-bold text-gray-500 mb-2">管网水力计算</h3>
-          <p class="text-sm text-gray-400 leading-relaxed mb-6">
-            提供重力流管渠与压力流管网的水力坡降计算、管径反算、充满度核算工具，内置海澄-威廉（Hazen-Williams）粗糙度数据库。
-          </p>
+      <!-- iframe 主体加载区 -->
+      <div class="relative w-full bg-white" :style="{ height: iframeHeight }">
+        <!-- 内置加载中 Loading 动画 -->
+        <div v-if="iframeLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mb-4"></div>
+          <p class="text-sm font-semibold text-gray-600">正在安全沙箱中加载规划工具模型...</p>
         </div>
-        <button 
-          disabled
-          class="w-full py-2.5 bg-gray-300 text-gray-500 font-medium rounded-lg text-center text-sm cursor-not-allowed"
-        >
-          未开放
-        </button>
-      </div>
 
-      <!-- 卡片3：竖向规划计算 (即将上线) -->
-      <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 flex flex-col justify-between opacity-75">
-        <div>
-          <div class="flex justify-between items-start mb-4">
-            <div class="h-12 w-12 bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center">
-              <!-- 竖向高程等高线图标 -->
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-              </svg>
-            </div>
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-600">即将上线</span>
-          </div>
-          <h3 class="text-lg font-bold text-gray-500 mb-2">竖向规划计算</h3>
-          <p class="text-sm text-gray-400 leading-relaxed mb-6">
-            结合高程、坡度及用地特征，快速计算场地平均坡度、土石方挖填平衡量及地表截流边沟断面规格，支持多重约束。
-          </p>
-        </div>
-        <button 
-          disabled
-          class="w-full py-2.5 bg-gray-300 text-gray-500 font-medium rounded-lg text-center text-sm cursor-not-allowed"
-        >
-          未开放
-        </button>
+        <!-- iframe 核心节点 -->
+        <iframe
+          :src="activeTool.url"
+          class="w-full h-full border-none"
+          scrolling="yes"
+          @load="handleIframeLoaded"
+        ></iframe>
       </div>
-
     </div>
 
-    <!-- 4. Tab2 内容：规划表格 -->
-    <div v-show="activeTab === 'tables'" class="space-y-4 py-4 animate-fade-in">
-      
-      <!-- 提示条：未登录时显示 -->
-      <div v-if="!isLoggedIn" class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-center space-x-3">
-        <svg class="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-        </svg>
-        <span class="text-sm text-yellow-800 font-medium">
-          温馨提示：您当前处于未登录状态。您可以下载表格，但【登录后】系统才可永久保存您的历史表格计算记录。
-        </span>
+    <!-- ========================================================= -->
+    <!-- 【优雅的 Tailwind 风格登录提示遮罩弹窗】 -->
+    <!-- ========================================================= -->
+    <div v-if="showLoginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-100 animate-pop-in">
+        <div class="text-center">
+          <span class="text-4xl">🔐</span>
+          <h3 class="text-xl font-bold text-gray-900 mt-4">需要登录才能继续</h3>
+          <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+            该规划计算工具包含专业市政计算资源与存储额度，请先登录您的平台账户。
+          </p>
+        </div>
+        <div class="mt-6 flex space-x-3">
+          <button 
+            @click="showLoginModal = false" 
+            class="flex-1 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 text-sm transition-all"
+          >
+            取消
+          </button>
+          <button 
+            @click="goToLogin" 
+            class="flex-1 py-2 bg-blue-900 text-white font-bold rounded-lg hover:bg-blue-800 text-sm transition-all shadow-md"
+          >
+            去登录
+          </button>
+        </div>
       </div>
-
-      <!-- 表格列表 -->
-      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-            <tr>
-              <th scope="col" class="px-6 py-4 text-left font-semibold">表格名称</th>
-              <th scope="col" class="px-6 py-4 text-left font-semibold">类型</th>
-              <th scope="col" class="px-6 py-4 class text-center font-semibold w-32">操作</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
-            <!-- 行 1 -->
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4">
-                <div class="flex items-center space-x-3">
-                  <span class="text-green-600">📊</span>
-                  <span class="font-medium text-gray-900">雨水设施规模计算表.xlsx</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-2.5 py-0.5 text-xs rounded bg-blue-100 text-blue-800">市政给排水</span>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <button 
-                  @click="handleDownload('雨水设施规模计算表.xlsx')"
-                  class="text-blue-900 hover:text-blue-700 text-sm font-semibold flex items-center justify-center space-x-1"
-                >
-                  <span>下载</span>
-                </button>
-              </td>
-            </tr>
-
-            <!-- 行 2 -->
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4">
-                <div class="flex items-center space-x-3">
-                  <span class="text-green-600">📊</span>
-                  <span class="font-medium text-gray-900">管网水力计算表.xlsx</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-2.5 py-0.5 text-xs rounded bg-purple-100 text-purple-800">管网水力学</span>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <button 
-                  @click="handleDownload('管网水力计算表.xlsx')"
-                  class="text-blue-900 hover:text-blue-700 text-sm font-semibold flex items-center justify-center space-x-1"
-                >
-                  <span>下载</span>
-                </button>
-              </td>
-            </tr>
-
-            <!-- 行 3 -->
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4">
-                <div class="flex items-center space-x-3">
-                  <span class="text-green-600">📊</span>
-                  <span class="font-medium text-gray-900">竖向规划计算表.xlsx</span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-2.5 py-0.5 text-xs rounded bg-yellow-100 text-yellow-800">城市竖向规划</span>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <button 
-                  @click="handleDownload('竖向规划计算表.xlsx')"
-                  class="text-blue-900 hover:text-blue-700 text-sm font-semibold flex items-center justify-center space-x-1"
-                >
-                  <span>下载</span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
     </div>
 
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user' // 引用状态管理
+import { getTools, accessTool } from '../utils/api' // 引用 API 方法
 
 const router = useRouter()
+const userStore = useUserStore()
 
 // 状态参数
-const activeTab = ref('calculators')
-const isLoggedIn = ref(false)
+const loading = ref(false)
+const iframeLoading = ref(true)
+const showLoginModal = ref(false)
+const tools = ref([])
+const selectedCategory = ref('全部')
+const activeTool = ref(null) // 存放当前运行的工具对象
 
-// 组件挂载时检查是否已登录，用于调整表格Tab下的友情提示显示
-onMounted(() => {
-  isLoggedIn.value = localStorage.getItem('isLoggedIn') === 'true'
+// 静态筛选项
+const categories = ['全部', '排水工程', '消防工程', '道路工程', '更多']
+
+// iframe 高度适配机制 (视口高度减去导航和工具条)
+const iframeHeight = computed(() => {
+  return 'calc(100vh - 16rem)' // 响应式安全高度适配
 })
 
-// 卡片 1 的跳转逻辑
-const navigateToStormwater = () => {
-  router.push('/tools/stormwater')
+// 根据分类筛选工具列表
+const filteredTools = computed(() => {
+  return tools.value
+})
+
+// 初始化拉取云端工具数据
+const fetchToolsData = async (cat = '全部') => {
+  loading.value = true
+  try {
+    const res = await getTools(cat)
+    tools.value = res.tools || []
+  } catch (err) {
+    console.error('获取工具列表失败:', err)
+  } finally {
+    loading.value = false
+  }
 }
 
-// 模拟下载表格操作
-const handleDownload = (tableName) => {
-  alert(`已开始下载：${tableName}\n(已拉起系统内置防灾计算表格模块)`)
+// 切换分类
+const handleCategoryChange = async (cat) => {
+  selectedCategory.value = cat
+  await fetchToolsData(cat)
 }
+
+// 处理卡片点击逻辑
+const handleToolClick = async (tool) => {
+  // 1. 如果工具未激活，拦截提示
+  if (tool.status !== 'active') {
+    alert('提示：该规划工具正在紧张模型调校中，敬请期待！')
+    return
+  }
+
+  // 2. 如果工具需要登录，且用户处于未登录状态，拦截弹出优雅弹窗
+  if (Number(tool.min_level ?? 0) > 0 && !userStore.isLoggedIn) {
+    showLoginModal.value = true
+    return
+  }
+
+  // 3. 已登录，向后端请求安全认证及权限核验
+  try {
+    const res = await accessTool(tool.id)
+    if (res.success) {
+      // 切换到【状态 2】，开启内嵌
+      activeTool.value = {
+        name: res.name,
+        url: res.url,
+        tool_type: res.tool_type,
+        icon: tool.icon
+      }
+      iframeLoading.value = true // 重置 Loading 状态
+    }
+  } catch (err) {
+    // 处理 403 权限越界或其他错误
+    if (err.response && err.response.status === 403) {
+      alert('您的下载/计算权限不足，请联系管理员升级您的权限组！')
+    } else {
+      alert('工具加载失败：' + (err.response?.data?.error || '网络异常'))
+    }
+  }
+}
+
+// 退出工具内嵌，退回【状态 1】
+const exitTool = () => {
+  activeTool.value = null
+}
+
+// 在新窗口打开外部工具
+const openInNewWindow = () => {
+  if (activeTool.value && activeTool.value.url) {
+    window.open(activeTool.value.url, '_blank')
+  }
+}
+
+// iframe 节点加载完毕，取消 loading 遮罩
+const handleIframeLoaded = () => {
+  iframeLoading.value = false
+}
+
+// 弹窗点击跳转登录页并带上返回来源参数
+const goToLogin = () => {
+  showLoginModal.value = false
+  router.push({
+    path: '/login',
+    query: { redirect: '/tools' }
+  })
+}
+
+// 生命周期挂载加载
+onMounted(() => {
+  fetchToolsData('全部')
+})
 </script>
 
 <style scoped>
-/* 局部简单的动效 */
+/* 优雅的淡入淡出动画 */
 .animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+  animation: fadeIn 0.25s ease-out forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(3px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 弹窗小卡片缩放动效 */
+.animate-pop-in {
+  animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 </style>
