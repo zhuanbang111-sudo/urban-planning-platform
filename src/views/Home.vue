@@ -73,7 +73,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">规划工具库</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">工具库</h3>
             <p class="text-sm font-semibold text-blue-900 mb-2">
               {{ loading ? '工具同步中...' : `${toolCount} 款专业计算工具，持续更新中` }}
             </p>
@@ -98,7 +98,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">政策文件分析</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">政策库</h3>
             <p class="text-sm text-gray-500 leading-relaxed mb-4">
               支持上传国土空间规划、传统市政规划、综合管廊、海绵城市、绿色基础设施等多类型 PDF 政策，依托大模型 AI 技术，快速生成条文提炼。
             </p>
@@ -120,9 +120,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">标准规范库</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">资料库</h3>
             <p class="text-sm text-gray-500 leading-relaxed mb-4">
-              收录最新国家、行业、地方级城市规划与规范。
+              收录最新国家、行业、地方级城市规划资料与标准规范。
             </p>
           </div>
           <span class="text-sm font-semibold text-green-800 flex items-center">
@@ -142,9 +142,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">规划知识库</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">知识库</h3>
             <p class="text-sm text-gray-500 leading-relaxed mb-4">
-              沉淀城市基础设施、城市更新及韧性城市设计的前沿学术笔记。提供强力检索，实现规划前置学术调研。
+              沉淀城市基础设施、城市更新及韧性城市设计的前沿学术笔记。为城市基础设施规划研究爱好者提供强大的学术资源支持。
             </p>
           </div>
           <span class="text-sm font-semibold text-yellow-800 flex items-center">
@@ -167,9 +167,9 @@
             </svg>
           </div>
           <div>
-            <h4 class="text-base font-bold text-gray-900 mb-1">专业聚焦</h4>
+            <h4 class="text-base font-bold text-gray-900 mb-1">工具多样</h4>
             <p class="text-sm text-gray-600 leading-relaxed">
-              专为城市基础设施规划研究人员服务，减少日常繁杂工作，实现资料一站式查找，涵盖雨水、消防、市政承载力等专业计算方法。
+              专为城市基础设施规划研究人员服务，减少日常繁杂工作，实现工具一站式查找，涵盖雨水、消防、市政承载力等专业计算方法。
             </p>
           </div>
         </div>
@@ -182,9 +182,9 @@
             </svg>
           </div>
           <div>
-            <h4 class="text-base font-bold text-gray-900 mb-1">安全可靠</h4>
+            <h4 class="text-base font-bold text-gray-900 mb-1">内容专业</h4>
             <p class="text-sm text-gray-600 leading-relaxed">
-              数据接口通过安全加固，权限层级分明，对内部科研核心规划成果与上传文件采取严格的数据防护机制。
+              聚焦城市基础设施规划研究领域，对内部科研核心规划成果与上传文件采取严格的审查机制。
             </p>
           </div>
         </div>
