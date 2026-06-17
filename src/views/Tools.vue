@@ -1,7 +1,23 @@
 <!-- 保存路径: src/views/Tools.vue -->
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 relative">
     
+    <!-- ========================================================= -->
+    <!-- 【新增：新窗口打开工具的临时漂浮提示条】 -->
+    <!-- ========================================================= -->
+    <transition name="toast-fade">
+      <div 
+        v-if="showNewWindowTip" 
+        class="fixed top-20 left-1/2 -translate-x-1/2 bg-blue-900 text-white px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 z-50 border border-blue-800"
+      >
+        <!-- 规划雷达/打勾 SVG 图标 -->
+        <svg class="h-5 w-5 text-yellow-400 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-sm font-bold tracking-wider">规划工具已在新窗口安全拉起，请在新标签页中查看。</span>
+      </div>
+    </transition>
+
     <!-- ========================================================= -->
     <!-- 【状态 1：工具列表状态】 -->
     <!-- ========================================================= -->
@@ -14,7 +30,7 @@
           <span class="text-gray-800 font-medium">规划工具库</span>
         </nav>
         <h1 class="text-3xl font-bold text-gray-900">规划工具库</h1>
-        <p class="text-sm text-gray-600 mt-1">内置市政、道路及给排水高阶规划计算工具。登录后可解锁保存计算记录权限。</p>
+        <p class="text-sm text-gray-600 mt-1">集成暴雨强度计算、管网水力学等高频市政工具，支持按类目快速检索。</p>
       </div>
 
       <!-- 分类筛选 Tab 栏 -->
@@ -39,14 +55,14 @@
       <!-- 工具加载提示 -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-12">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mb-3"></div>
-        <p class="text-sm text-gray-500">正在调取云端工具数据，请稍候...</p>
+        <p class="text-sm text-gray-500">正在同步云端工具资源，请稍候...</p>
       </div>
 
       <!-- 无工具占位图 -->
       <div v-else-if="filteredTools.length === 0" class="text-center py-16 bg-white border border-gray-100 rounded-xl shadow-sm">
         <span class="text-4xl">🛠</span>
-        <h3 class="text-lg font-bold text-gray-800 mt-4">该类目下暂无上线工具</h3>
-        <p class="text-sm text-gray-500 mt-1">请尝试切换其他分类或联系管理员反馈需求。</p>
+        <h3 class="text-lg font-bold text-gray-800 mt-4">该分类下暂无已上线工具</h3>
+        <p class="text-sm text-gray-500 mt-1">模型库正在持续补充，请尝试切换其他分类。</p>
       </div>
 
       <!-- 工具卡片网格 -->
@@ -58,7 +74,7 @@
           :class="[
             tool.status === 'active' 
               ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer bg-white' 
-              : 'bg-gray-50 opacity-70 cursor-not-allowed'
+              : 'bg-gray-50 opacity-75 cursor-not-allowed'
           ]"
           class="border border-gray-200 rounded-xl p-6 transition-all duration-300 flex flex-col justify-between"
         >
@@ -92,7 +108,7 @@
               {{ tool.status === 'active' ? '已上线' : '即将上线' }}
             </span>
             <span class="text-xs font-semibold text-blue-900 flex items-center hover:underline">
-              {{ tool.status === 'active' ? '立即进入' : '敬请期待' }} <span class="ml-1">→</span>
+              {{ tool.status === 'active' ? '开始调用' : '正在调校' }} <span class="ml-1">→</span>
             </span>
           </div>
         </div>
@@ -100,11 +116,11 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- 【状态 2：工具运行状态 (iframe 内嵌)】 -->
+    <!-- 【状态 2：工具运行状态 (仅针对 iframe 或 iframe_external 类型)】 -->
     <!-- ========================================================= -->
     <div v-else class="flex flex-col border border-gray-200 rounded-2xl overflow-hidden shadow-lg animate-fade-in">
       
-      <!-- 顶部固定工具栏 -->
+      <!-- 顶部固定控制栏 -->
       <div class="bg-gray-900 text-white px-4 py-3 flex items-center justify-between z-10">
         <button 
           @click="exitTool" 
@@ -119,7 +135,7 @@
         </h2>
 
         <div>
-          <!-- 如果是外部链接，才提供“在新窗口打开”的按钮 -->
+          <!-- 如果是外部 iframe 链接，提供在新窗口中跳转打开的能力 -->
           <button 
             v-if="activeTool.tool_type === 'iframe_external'"
             @click="openInNewWindow"
@@ -127,19 +143,18 @@
           >
             在新窗口打开 ↗
           </button>
-          <div v-else class="w-20"></div> <!-- 占位保持排版对称 -->
+          <div v-else class="w-20"></div> <!-- 占位 -->
         </div>
       </div>
 
-      <!-- iframe 主体加载区 -->
+      <!-- iframe 主体 -->
       <div class="relative w-full bg-white" :style="{ height: iframeHeight }">
-        <!-- 内置加载中 Loading 动画 -->
+        <!-- 内嵌加载中 Loading 遮罩 -->
         <div v-if="iframeLoading" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-50 z-20">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mb-4"></div>
-          <p class="text-sm font-semibold text-gray-600">正在安全沙箱中加载规划工具模型...</p>
+          <p class="text-sm font-semibold text-gray-600">安全沙箱装载中，请稍后...</p>
         </div>
 
-        <!-- iframe 核心节点 -->
         <iframe
           :src="activeTool.url"
           class="w-full h-full border-none"
@@ -150,15 +165,15 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- 【优雅的 Tailwind 风格登录提示遮罩弹窗】 -->
+    <!-- 【优雅的登录权限提示遮罩弹窗】 -->
     <!-- ========================================================= -->
     <div v-if="showLoginModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-100 animate-pop-in">
         <div class="text-center">
           <span class="text-4xl">🔐</span>
-          <h3 class="text-xl font-bold text-gray-900 mt-4">需要登录才能继续</h3>
+          <h3 class="text-xl font-bold text-gray-900 mt-4">该工具需要登录</h3>
           <p class="text-sm text-gray-500 mt-2 leading-relaxed">
-            该规划计算工具包含专业市政计算资源与存储额度，请先登录您的平台账户。
+            此规划计算模型涉及专有数据读取与历史记录，请登录您的规划师账号后体验。
           </p>
         </div>
         <div class="mt-6 flex space-x-3">
@@ -166,7 +181,7 @@
             @click="showLoginModal = false" 
             class="flex-1 py-2 border border-gray-300 text-gray-600 font-semibold rounded-lg hover:bg-gray-50 text-sm transition-all"
           >
-            取消
+            关闭
           </button>
           <button 
             @click="goToLogin" 
@@ -184,8 +199,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '../stores/user' // 引用状态管理
-import { getTools, accessTool } from '../utils/api' // 引用 API 方法
+import { useUserStore } from '../stores/user'
+import { getTools, accessTool } from '../utils/api'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -194,24 +209,25 @@ const userStore = useUserStore()
 const loading = ref(false)
 const iframeLoading = ref(true)
 const showLoginModal = ref(false)
+const showNewWindowTip = ref(false) // 漂浮提示状态
 const tools = ref([])
 const selectedCategory = ref('全部')
-const activeTool = ref(null) // 存放当前运行的工具对象
+const activeTool = ref(null)
 
 // 静态筛选项
 const categories = ['全部', '排水工程', '消防工程', '道路工程', '更多']
 
-// iframe 高度适配机制 (视口高度减去导航和工具条)
+// iframe 视口高度
 const iframeHeight = computed(() => {
-  return 'calc(100vh - 16rem)' // 响应式安全高度适配
+  return 'calc(100vh - 16rem)'
 })
 
-// 根据分类筛选工具列表
+// 分类筛选列表
 const filteredTools = computed(() => {
   return tools.value
 })
 
-// 初始化拉取云端工具数据
+// 获取列表
 const fetchToolsData = async (cat = '全部') => {
   loading.value = true
   try {
@@ -230,61 +246,71 @@ const handleCategoryChange = async (cat) => {
   await fetchToolsData(cat)
 }
 
-// 处理卡片点击逻辑
+// 核心卡片点击判定 (新增对 new_window 模式的支持)
 const handleToolClick = async (tool) => {
-  // 1. 如果工具未激活，拦截提示
   if (tool.status !== 'active') {
-    alert('提示：该规划工具正在紧张模型调校中，敬请期待！')
+    alert('提示：该工具正在内部演进，敬请期待！')
     return
   }
 
-  // 2. 如果工具需要登录，且用户处于未登录状态，拦截弹出优雅弹窗
+  // 校验登录状态
   if (Number(tool.min_level ?? 0) > 0 && !userStore.isLoggedIn) {
     showLoginModal.value = true
     return
   }
 
-  // 3. 已登录，向后端请求安全认证及权限核验
   try {
     const res = await accessTool(tool.id)
     if (res.success) {
-      // 切换到【状态 2】，开启内嵌
-      activeTool.value = {
-        name: res.name,
-        url: res.url,
-        tool_type: res.tool_type,
-        icon: tool.icon
+      // 分流处理：
+      if (res.tool_type === 'new_window') {
+        // A.如果是新窗口类型，不切换状态，直接调起新标签页打开
+        window.open(res.url, '_blank')
+        
+        // 弹出优雅的漂浮 Toast 提示，3 秒后自动关闭
+        showNewWindowTip.value = true
+        setTimeout(() => {
+          showNewWindowTip.value = false
+        }, 3000)
+        
+      } else {
+        // B.如果是 iframe 或 iframe_external，则正常切换到页面内嵌展示
+        activeTool.value = {
+          name: res.name,
+          url: res.url,
+          tool_type: res.tool_type,
+          icon: tool.icon
+        }
+        iframeLoading.value = true
       }
-      iframeLoading.value = true // 重置 Loading 状态
     }
   } catch (err) {
-    // 处理 403 权限越界或其他错误
     if (err.response && err.response.status === 403) {
-      alert('您的下载/计算权限不足，请联系管理员升级您的权限组！')
+      alert('权限不足，请联系系统管理员。')
     } else {
-      alert('工具加载失败：' + (err.response?.data?.error || '网络异常'))
+      alert('工具获取失败：' + (err.response?.data?.error || '网络访问超时'))
     }
   }
 }
 
-// 退出工具内嵌，退回【状态 1】
+// 退出内嵌
 const exitTool = () => {
   activeTool.value = null
 }
 
-// 在新窗口打开外部工具
+// 新窗口打开外部链接
 const openInNewWindow = () => {
   if (activeTool.value && activeTool.value.url) {
     window.open(activeTool.value.url, '_blank')
   }
 }
 
-// iframe 节点加载完毕，取消 loading 遮罩
+// iframe 装载成功
 const handleIframeLoaded = () => {
   iframeLoading.value = false
 }
 
-// 弹窗点击跳转登录页并带上返回来源参数
+// 跳转到登录并记录回调地址
 const goToLogin = () => {
   showLoginModal.value = false
   router.push({
@@ -293,7 +319,7 @@ const goToLogin = () => {
   })
 }
 
-// 生命周期挂载加载
+// 首次挂载初始化
 onMounted(() => {
   fetchToolsData('全部')
 })
@@ -330,5 +356,29 @@ onMounted(() => {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Toast 漂浮条过渡效果 */
+.toast-fade-enter-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.toast-fade-leave-active {
+  transition: all 0.2s ease-in;
+}
+.toast-fade-enter-from {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+}
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -10px);
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
