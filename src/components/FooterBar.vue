@@ -29,14 +29,13 @@
         <div class="flex flex-col space-y-3">
           <span class="text-sm font-semibold tracking-wider text-white uppercase border-b border-blue-900 pb-2">单位信息</span>
           <ul class="space-y-2 text-sm text-gray-300">
-            <li>单位：【TODO: 请填写您的单位名称】</li>
-            <li>邮箱：contact@urbanplanning.org</li>
+            <li>本站为个人网站，纯粹为基础设施规划研究爱好者设置。</li>           
           </ul>
         </div>
       </div>
       <!-- 版权栏 -->
       <div class="border-t border-blue-900 mt-8 pt-6 text-center text-xs text-gray-400">
-        <span>© 2025 城市规划研究平台. 保留所有权利。</span>
+        <span>© 2026 基础设施规划研究平台. 保留所有权利。</span>
       </div>
     </div>
   </footer>
