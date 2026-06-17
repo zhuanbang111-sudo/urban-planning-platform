@@ -6,11 +6,11 @@
     <section class="bg-gradient-to-r from-[#1e3a5f] to-[#12253f] text-white rounded-2xl shadow-xl overflow-hidden">
       <div class="px-6 py-16 sm:px-12 lg:px-20 text-center max-w-4xl mx-auto">
         <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6">
-          城市规划研究一站式平台
+          城市基础设施规划研究一站式平台
         </h1>
         <p class="text-lg sm:text-xl text-gray-300 leading-relaxed mb-8">
-          整合规划计算工具、政策文件分析、标准规范资料库，<br class="hidden sm:inline" />
-          全方位服务市政基础设施规划研究，助力数字化空间决策。
+          整合计算工具、政策文件、标准规范、知识资料库，<br class="hidden sm:inline" />
+          全方位服务市政基础设施规划研究，助力规划研究决策。
         </p>
         <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
           <router-link 
@@ -56,7 +56,7 @@
     <section>
       <div class="text-center mb-10">
         <h2 class="text-3xl font-bold text-gray-900">核心功能板块</h2>
-        <p class="mt-2 text-gray-600">高效赋能规划前期调研、中后期精细化设计与多指标校核</p>
+        <p class="mt-2 text-gray-600">高效赋能基础设施规划前期调研、精细化设计与多指标校核</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -78,7 +78,7 @@
               {{ loading ? '工具同步中...' : `${toolCount} 款专业计算工具，持续更新中` }}
             </p>
             <p class="text-sm text-gray-500 leading-relaxed mb-4">
-              内置专业雨水径流计算、水力学参数演进公式，整合在线协作表格。
+              内置专业工具，助力基础设施规划研究过程中，数据处理、雨水径流计算、水力学参数演进公式等。
             </p>
           </div>
           <span class="text-sm font-semibold text-blue-800 flex items-center">
@@ -100,7 +100,7 @@
             </div>
             <h3 class="text-lg font-bold text-gray-900 mb-2">政策文件分析</h3>
             <p class="text-sm text-gray-500 leading-relaxed mb-4">
-              支持上传国土空间规划、海绵城市、绿色基础设施等多类型 PDF 政策，依托大模型 AI 技术，快速生成条文提炼。
+              支持上传国土空间规划、传统市政规划、综合管廊、海绵城市、绿色基础设施等多类型 PDF 政策，依托大模型 AI 技术，快速生成条文提炼。
             </p>
           </div>
           <span class="text-sm font-semibold text-indigo-800 flex items-center">
@@ -120,9 +120,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
               </svg>
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mb-2">标准规范资料库</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-2">标准规范库</h3>
             <p class="text-sm text-gray-500 leading-relaxed mb-4">
-              收录最新国家、行业、地方级城市规划与防灾避险、给排水设计规范。实行访客/用户/管理员三级下载权限控制。
+              收录最新国家、行业、地方级城市规划与规范。
             </p>
           </div>
           <span class="text-sm font-semibold text-green-800 flex items-center">
@@ -169,7 +169,7 @@
           <div>
             <h4 class="text-base font-bold text-gray-900 mb-1">专业聚焦</h4>
             <p class="text-sm text-gray-600 leading-relaxed">
-              专为注册规划师、给排水工程设计师量身打造，涵盖海绵城市、市政管网等垂直领域的专业计算体系。
+              专为城市基础设施规划研究人员服务，减少日常繁杂工作，实现资料一站式查找，涵盖雨水、消防、市政承载力等专业计算方法。
             </p>
           </div>
         </div>
@@ -184,7 +184,7 @@
           <div>
             <h4 class="text-base font-bold text-gray-900 mb-1">安全可靠</h4>
             <p class="text-sm text-gray-600 leading-relaxed">
-              数据接口通过安全加固，权限层级分明，对内部科研核心规划成果与上传文件采取严格的脱敏及数据防护机制。
+              数据接口通过安全加固，权限层级分明，对内部科研核心规划成果与上传文件采取严格的数据防护机制。
             </p>
           </div>
         </div>
@@ -199,7 +199,7 @@
           <div>
             <h4 class="text-base font-bold text-gray-900 mb-1">持续更新</h4>
             <p class="text-sm text-gray-600 leading-relaxed">
-              不断收录全国各省市最新颁布的国土空间规划技术规程，保证雨水计算暴雨公式参数等时刻紧跟政策标准。
+              不断收录全国各省市最新颁布的规划设计技术规程/标准/规范，紧跟政策形势。
             </p>
           </div>
         </div>

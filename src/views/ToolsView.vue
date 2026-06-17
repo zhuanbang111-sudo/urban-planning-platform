@@ -9,7 +9,7 @@
         </nav>
         <h1 class="text-3xl font-bold text-slate-950">规划工具库</h1>
         <p class="mt-2 text-base text-slate-600 max-w-3xl">
-          专业市政规划计算工具，登录后使用完整功能。
+          专业市政规划计算辅助工具，登录后可以使用完整功能。
         </p>
       </div>
 
