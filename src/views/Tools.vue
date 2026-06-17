@@ -3,18 +3,15 @@
   <div class="space-y-6 relative">
     
     <!-- ========================================================= -->
-    <!-- 【新增：新窗口打开工具的临时漂浮提示条】 -->
+    <!-- 【顶部悬浮提示条：绿色背景，白色文字】 -->
     <!-- ========================================================= -->
     <transition name="toast-fade">
       <div 
         v-if="showNewWindowTip" 
-        class="fixed top-20 left-1/2 -translate-x-1/2 bg-blue-900 text-white px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 z-50 border border-blue-800"
+        class="fixed top-20 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 z-50 border border-green-500 animate-bounce-light"
       >
-        <!-- 规划雷达/打勾 SVG 图标 -->
-        <svg class="h-5 w-5 text-yellow-400 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span class="text-sm font-bold tracking-wider">规划工具已在新窗口安全拉起，请在新标签页中查看。</span>
+        <span class="text-lg">✅</span>
+        <span class="text-sm font-bold tracking-wider">工具已在新窗口打开，请查看浏览器新标签页</span>
       </div>
     </transition>
 
@@ -116,7 +113,7 @@
     </div>
 
     <!-- ========================================================= -->
-    <!-- 【状态 2：工具运行状态 (仅针对 iframe 或 iframe_external 类型)】 -->
+    <!-- 【状态 2：工具运行状态 (仅针对本站标准的 iframe 本地内嵌类型)】 -->
     <!-- ========================================================= -->
     <div v-else class="flex flex-col border border-gray-200 rounded-2xl overflow-hidden shadow-lg animate-fade-in">
       
@@ -134,17 +131,8 @@
           <span>{{ activeTool.name }}</span>
         </h2>
 
-        <div>
-          <!-- 如果是外部 iframe 链接，提供在新窗口中跳转打开的能力 -->
-          <button 
-            v-if="activeTool.tool_type === 'iframe_external'"
-            @click="openInNewWindow"
-            class="px-3 py-1 bg-blue-800 hover:bg-blue-700 text-xs font-bold rounded text-white transition-all shadow-sm"
-          >
-            在新窗口打开 ↗
-          </button>
-          <div v-else class="w-20"></div> <!-- 占位 -->
-        </div>
+        <!-- 本地内嵌无外部跳转需求，放置占位保持排版对称 -->
+        <div class="w-20"></div>
       </div>
 
       <!-- iframe 主体 -->
@@ -209,7 +197,7 @@ const userStore = useUserStore()
 const loading = ref(false)
 const iframeLoading = ref(true)
 const showLoginModal = ref(false)
-const showNewWindowTip = ref(false) // 漂浮提示状态
+const showNewWindowTip = ref(false) // 漂浮提示状态变量
 const tools = ref([])
 const selectedCategory = ref('全部')
 const activeTool = ref(null)
@@ -217,17 +205,17 @@ const activeTool = ref(null)
 // 静态筛选项
 const categories = ['全部', '排水工程', '消防工程', '道路工程', '更多']
 
-// iframe 视口高度
+// iframe 视口高度自适应
 const iframeHeight = computed(() => {
   return 'calc(100vh - 16rem)'
 })
 
-// 分类筛选列表
+// 工具列表
 const filteredTools = computed(() => {
   return tools.value
 })
 
-// 获取列表
+// 获取列表数据
 const fetchToolsData = async (cat = '全部') => {
   loading.value = true
   try {
@@ -246,7 +234,7 @@ const handleCategoryChange = async (cat) => {
   await fetchToolsData(cat)
 }
 
-// 核心卡片点击判定 (新增对 new_window 模式的支持)
+// 核心卡片点击判定 (对 new_window 和 iframe_external 分流到新标签页打开)
 const handleToolClick = async (tool) => {
   if (tool.status !== 'active') {
     alert('提示：该工具正在内部演进，敬请期待！')
@@ -263,18 +251,18 @@ const handleToolClick = async (tool) => {
     const res = await accessTool(tool.id)
     if (res.success) {
       // 分流处理：
-      if (res.tool_type === 'new_window') {
-        // A.如果是新窗口类型，不切换状态，直接调起新标签页打开
+      if (res.tool_type === 'new_window' || res.tool_type === 'iframe_external') {
+        // A. 外部链接和新窗口链接，一律采用 window.open 打开，不切换当前页面状态
         window.open(res.url, '_blank')
         
-        // 弹出优雅的漂浮 Toast 提示，3 秒后自动关闭
+        // 弹出绿色漂浮 Toast 提示，3 秒后自动关闭
         showNewWindowTip.value = true
         setTimeout(() => {
           showNewWindowTip.value = false
         }, 3000)
         
       } else {
-        // B.如果是 iframe 或 iframe_external，则正常切换到页面内嵌展示
+        // B. 只有本站 iframe 类型工具，才在当前页面切换内嵌状态
         activeTool.value = {
           name: res.name,
           url: res.url,
@@ -296,13 +284,6 @@ const handleToolClick = async (tool) => {
 // 退出内嵌
 const exitTool = () => {
   activeTool.value = null
-}
-
-// 新窗口打开外部链接
-const openInNewWindow = () => {
-  if (activeTool.value && activeTool.value.url) {
-    window.open(activeTool.value.url, '_blank')
-  }
 }
 
 // iframe 装载成功
@@ -358,7 +339,7 @@ onMounted(() => {
   }
 }
 
-/* Toast 漂浮条过渡效果 */
+/* Toast 绿色漂浮条过渡动画效果 */
 .toast-fade-enter-active {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -372,13 +353,5 @@ onMounted(() => {
 .toast-fade-leave-to {
   opacity: 0;
   transform: translate(-50%, -10px);
-}
-
-.animate-spin-slow {
-  animation: spin 3s linear infinite;
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 </style>
