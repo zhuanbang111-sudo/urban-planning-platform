@@ -12,7 +12,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
           <span class="text-lg font-bold tracking-wider font-sans">
-            城市规划研究平台
+            城市基础设施规划研究平台
           </span>
         </div>
 
@@ -158,8 +158,8 @@ const isMobileMenuOpen = ref(false)
 
 const navLinks = [
   { name: '首页', path: '/' },
-  { name: '规划工具与表格', path: '/tools' },
-  { name: '政策分析', path: '/policy' },
+  { name: '工具库', path: '/tools' },
+  { name: '政策库', path: '/policy' },
   { name: '资料库', path: '/library' },
   { name: '知识库', path: '/knowledge' }
 ]
