@@ -7,7 +7,7 @@
       <div class="text-center">
         <h2 class="text-3xl font-extrabold text-gray-900">用户登录</h2>
         <p class="mt-2 text-sm text-gray-500">
-          已启用 D1 云端安全数据通道。登录后解锁规划工具与 AI 分析。
+          登录后解锁全部功能。
         </p>
       </div>
 
@@ -85,7 +85,7 @@ const isSubmitting = ref(false)
 const handleLogin = async () => {
   // 1. 基本的前端格式预校验
   if (!email.value.includes('@')) {
-    errorMessage.value = '请输入合法的邮箱格式。'
+    errorMessage.value = '请输入正确的邮箱格式。'
     return
   }
   if (password.value.length < 8) {
@@ -102,7 +102,7 @@ const handleLogin = async () => {
   isSubmitting.value = false
 
   if (res.success) {
-    alert('登录成功！欢迎回到城市规划研究平台。')
+    alert('登录成功！欢迎回到基础设施规划研究平台。')
     
     // 3. 登录成功，检查是否有拦截回跳来源
     const redirectPath = route.query.redirect

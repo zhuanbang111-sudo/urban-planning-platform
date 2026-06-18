@@ -38,14 +38,14 @@
               {{ registerType === 'invite' ? '邀请注册通道' : '人工审核通道' }}
             </h3>
             <p class="text-xs text-gray-500 mt-1 leading-relaxed">
-              {{ registerType === 'invite' ? '凭专用工作密钥一秒激活权限，立等可入。' : '填写科研背景和单位全称，管理员极速人工审批。' }}
+              {{ registerType === 'invite' ? '凭邀请码激活权限，立等可入。' : '填写科研背景和单位全称，管理员极速人工审批。' }}
             </p>
           </div>
 
           <form @submit.prevent="handleRegister" class="space-y-4">
             <!-- 邮箱输入 -->
             <div>
-              <label class="block text-xs font-bold text-gray-700 uppercase">工作邮箱（必填）</label>
+              <label class="block text-xs font-bold text-gray-700 uppercase">注册邮箱（必填）</label>
               <input 
                 v-model="email" 
                 type="email" 
@@ -106,14 +106,14 @@
                 class="mt-1 block w-full px-4 py-2.5 border border-gray-300 rounded-xl shadow-sm text-sm font-mono tracking-wider focus:ring-2 focus:ring-green-600 focus:border-green-600"
               />
               <p class="text-xxs text-gray-500">
-                没有邀请密钥？点击上方选择 <span class="font-bold text-blue-900 cursor-pointer" @click="registerType = 'apply'">「申请注册」</span> 人工通道。
+                没有邀请码？点击上方选择 <span class="font-bold text-blue-900 cursor-pointer" @click="registerType = 'apply'">「申请注册」</span> 人工通道。
               </p>
             </div>
 
             <!-- [分流表单项 2] 申请注册 -->
             <div v-else class="space-y-4 animate-fade-in">
               <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase">真实姓名（必填）</label>
+                <label class="block text-xs font-bold text-gray-700 uppercase">用户名（必填）</label>
                 <input 
                   v-model="applyName" 
                   type="text" 
@@ -175,7 +175,7 @@
           <div class="space-y-2">
             <h3 class="text-2xl font-black text-gray-900">人工申请提交成功！</h3>
             <p class="text-sm text-gray-500 leading-relaxed max-w-sm mx-auto">
-              平台管理员将在 **1-3 个工作日** 内核对您的规划从业或科研资质进行核发授权。通过后，将直接给您的注册邮箱分配额度并解锁，届时可直接登录。
+              平台管理员将在 **1-3 个工作日** 内审核并进行核发授权。通过后，将直接给您的注册邮箱分配额度并解锁，届时可直接登录。
             </p>
           </div>
           <router-link 

@@ -5,9 +5,9 @@
         <nav class="text-sm text-slate-500 mb-3 flex flex-wrap items-center gap-2">
           <router-link to="/" class="hover:text-slate-900">首页</router-link>
           <span>›</span>
-          <span class="font-medium text-slate-800">规划工具库</span>
+          <span class="font-medium text-slate-800">工具库</span>
         </nav>
-        <h1 class="text-3xl font-bold text-slate-950">规划工具库</h1>
+        <h1 class="text-3xl font-bold text-slate-950">工具库</h1>
         <p class="mt-2 text-base text-slate-600 max-w-3xl">
           专业市政规划计算辅助工具，登录后可以使用完整功能。
         </p>
@@ -43,7 +43,7 @@
 
         <div v-if="loading" class="rounded-3xl border border-slate-200 bg-white p-12 text-center shadow-sm">
           <div class="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full border-4 border-slate-200 border-t-slate-900 animate-spin"></div>
-          <p class="mt-4 text-slate-600">正在加载工具列表...</p>
+          <p class="mt-4 text-slate-600">正在加载工具库...</p>
         </div>
 
         <div v-else class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

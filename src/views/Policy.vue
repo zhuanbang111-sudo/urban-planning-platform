@@ -10,7 +10,7 @@
         <span class="text-gray-800 font-medium">政策文件分析</span>
       </nav>
       <h1 class="text-3xl font-bold text-gray-900">政策文件分析</h1>
-      <p class="text-sm text-gray-600 mt-1">上传 PDF 规划政策文件，使用 AI 大模型提炼关键指标与条文要素。</p>
+      <p class="text-sm text-gray-600 mt-1">上传 PDF 规划政策文件，内置开源AI大模型，可使用 AI 大模型提炼关键指标与条文要素。</p>
     </div>
 
     <!-- 占位主体卡片 -->

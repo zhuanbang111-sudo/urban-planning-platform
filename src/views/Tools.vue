@@ -24,10 +24,10 @@
         <nav class="text-sm text-gray-500 mb-2 flex items-center space-x-2">
           <router-link to="/" class="hover:text-blue-900">首页</router-link>
           <span>&gt;</span>
-          <span class="text-gray-800 font-medium">规划工具库</span>
+          <span class="text-gray-800 font-medium">工具库</span>
         </nav>
-        <h1 class="text-3xl font-bold text-gray-900">规划工具库</h1>
-        <p class="text-sm text-gray-600 mt-1">集成暴雨强度计算、管网水力学等高频市政工具，支持按类目快速检索。</p>
+        <h1 class="text-3xl font-bold text-gray-900">工具库</h1>
+        <p class="text-sm text-gray-600 mt-1">集成各类市政规划研究的高频计算工具，例如暴雨强度计算、管网水力学等，支持按类目快速检索。</p>
       </div>
 
       <!-- 分类筛选 Tab 栏 -->
@@ -52,14 +52,14 @@
       <!-- 工具加载提示 -->
       <div v-if="loading" class="flex flex-col items-center justify-center py-12">
         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900 mb-3"></div>
-        <p class="text-sm text-gray-500">正在同步云端工具资源，请稍候...</p>
+        <p class="text-sm text-gray-500">正在同步工具库，请稍候...</p>
       </div>
 
       <!-- 无工具占位图 -->
       <div v-else-if="filteredTools.length === 0" class="text-center py-16 bg-white border border-gray-100 rounded-xl shadow-sm">
         <span class="text-4xl">🛠</span>
         <h3 class="text-lg font-bold text-gray-800 mt-4">该分类下暂无已上线工具</h3>
-        <p class="text-sm text-gray-500 mt-1">模型库正在持续补充，请尝试切换其他分类。</p>
+        <p class="text-sm text-gray-500 mt-1">工具库正在持续补充，请尝试切换其他分类。</p>
       </div>
 
       <!-- 工具卡片网格 -->
@@ -161,7 +161,7 @@
           <span class="text-4xl">🔐</span>
           <h3 class="text-xl font-bold text-gray-900 mt-4">该工具需要登录</h3>
           <p class="text-sm text-gray-500 mt-2 leading-relaxed">
-            此规划计算模型涉及专有数据读取与历史记录，请登录您的规划师账号后体验。
+            此规划计算模型涉及专有数据读取与历史记录，请登录您的账号后体验。
           </p>
         </div>
         <div class="mt-6 flex space-x-3">
