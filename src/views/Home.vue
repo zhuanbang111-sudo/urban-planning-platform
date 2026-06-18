@@ -48,7 +48,7 @@
       <!-- 统计项 3 -->
       <div class="flex flex-col justify-center py-2">
         <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">持续更新</p>
-        <p class="mt-1 text-3xl font-extrabold text-blue-900">2024 年上线</p>
+        <p class="mt-1 text-3xl font-extrabold text-blue-900">2026 年上线</p>
       </div>
     </section>
 
