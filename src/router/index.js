@@ -1,6 +1,6 @@
 // 保存路径: src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import { h } from 'vue' // 引入渲染函数，完美解决缺失文件编译崩溃问题
+import { h } from 'vue' // 引入渲染函数
 import { useUserStore } from '../stores/user'
 
 // 导入前台基础页面组件
@@ -136,7 +136,7 @@ const routes = [
       {
         path: '',
         name: 'AdminDashboard',
-        component: AdminDashboard, // 采用上方已自愈声明的组件
+        component: AdminDashboard, // 采用内置防崩组件
         meta: { title: '数据统计 - 管理后台' }
       },
       {
@@ -154,25 +154,25 @@ const routes = [
       {
         path: 'tools',
         name: 'AdminTools',
-        component: AdminTools, // 采用内联防崩
+        component: AdminTools, // 采用内置防崩组件
         meta: { title: '工具管理 - 管理后台' }
       },
       {
         path: 'users',
         name: 'AdminUsers',
-        component: AdminUsers, // 采用内嵌
+        component: AdminUsers, // 采用内置防崩组件
         meta: { title: '用户管理 - 管理后台' }
       },
       {
         path: 'notices',
         name: 'AdminNotices',
-        component: AdminNotices, // 采用内嵌
+        component: AdminNotices, // 采用内置防崩组件
         meta: { title: '通知公告 - 管理后台' }
       },
       {
         path: 'settings',
         name: 'AdminSettings',
-        component: AdminSettings, // 采用内嵌
+        component: AdminSettings, // 采用内置防崩组件
         meta: { title: '系统设置 - 管理后台' }
       }
     ]
@@ -185,16 +185,16 @@ const router = createRouter({
   routes
 })
 
-// 全局前置守卫：控制访问权限与修改浏览器标签标题
+// 全局前置守卫
 router.beforeEach(async (to, from, next) => {
-  // 1. 动态修改浏览器标签页的标题
+  // 1. 动态修改网页标题
   if (to.meta && to.meta.title) {
     document.title = to.meta.title
   } else {
     document.title = '城市规划研究平台'
   }
 
-  // 2. 后台管理系统路由深度拦截防御
+  // 2. 后台管理系统路由鉴权
   if (to.path.startsWith('/admin')) {
     const token = localStorage.getItem('token')
     if (!token) {
@@ -205,7 +205,6 @@ router.beforeEach(async (to, from, next) => {
     if (!userStore.user) {
       await userStore.checkAuth()
     }
-    // 强制校验用户角色必须为 admin
     if (userStore.user?.role !== 'admin') {
       alert('安全警告：您的账户无权访问后台管理系统。')
       return next('/')
@@ -213,7 +212,7 @@ router.beforeEach(async (to, from, next) => {
     return next()
   }
 
-  // 3. 普通前台页面要求登录的拦截
+  // 3. 普通页面登录拦截
   if (to.meta.requiresAuth) {
     const isLoggedIn = localStorage.getItem('isLoggedIn')
     if (isLoggedIn === 'true') {
