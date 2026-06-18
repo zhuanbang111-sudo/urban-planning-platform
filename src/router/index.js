@@ -1,6 +1,6 @@
 // 保存路径: src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import { h } from 'vue' // 引入渲染函数
+import { h } from 'vue' // 引入渲染函数，完美解决缺失文件导致的编译崩溃问题
 import { useUserStore } from '../stores/user'
 
 // 导入前台基础页面组件
@@ -185,16 +185,16 @@ const router = createRouter({
   routes
 })
 
-// 全局前置守卫
+// 全局前置守卫：控制访问权限与修改浏览器标签标题
 router.beforeEach(async (to, from, next) => {
-  // 1. 动态修改网页标题
+  // 1. 动态修改浏览器标签页的标题
   if (to.meta && to.meta.title) {
     document.title = to.meta.title
   } else {
     document.title = '城市规划研究平台'
   }
 
-  // 2. 后台管理系统路由鉴权
+  // 2. 后台管理系统路由深度拦截防御
   if (to.path.startsWith('/admin')) {
     const token = localStorage.getItem('token')
     if (!token) {
@@ -205,6 +205,7 @@ router.beforeEach(async (to, from, next) => {
     if (!userStore.user) {
       await userStore.checkAuth()
     }
+    // 强制校验用户角色必须为 admin
     if (userStore.user?.role !== 'admin') {
       alert('安全警告：您的账户无权访问后台管理系统。')
       return next('/')
@@ -212,7 +213,7 @@ router.beforeEach(async (to, from, next) => {
     return next()
   }
 
-  // 3. 普通页面登录拦截
+  // 3. 普通前台页面要求登录的拦截
   if (to.meta.requiresAuth) {
     const isLoggedIn = localStorage.getItem('isLoggedIn')
     if (isLoggedIn === 'true') {
