@@ -3,7 +3,7 @@ import axios from 'axios'
 import router from '../router'
 
 // 已锁定的您真实的 Cloudflare Worker 域名
-const WORKER_BASE_URL = 'https://planning-platform-api.zhuanbang111.workers.dev/' 
+const WORKER_BASE_URL = 'https://api-planning.urbancopilot.qzz.io/' 
 
 const api = axios.create({
   baseURL: WORKER_BASE_URL,
