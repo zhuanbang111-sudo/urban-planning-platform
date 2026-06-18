@@ -80,3 +80,48 @@ export const saveToolHistory = (toolName, inputData, result) =>
 // 8. 获取当前用户的最近 20 条计算历史记录
 export const getToolHistory = () =>
   api.get('/api/tool-history')
+
+// 追加到 src/utils/api.js 尾部，用于管理端数据的安全管控与核查
+
+/**
+ * 9. GET /api/admin/applications - 获取注册审核申请列表（支持根据 pending/active/rejected 状态筛选）
+ */
+export const getApplications = (status) => {
+  const url = status ? `/api/admin/applications?status=${encodeURIComponent(status)}` : '/api/admin/applications'
+  return api.get(url)
+}
+
+/**
+ * 10. PATCH /api/admin/applications/:id/approve - 一键核准注册申请并分配初始配额
+ */
+export const approveApplication = (id) => {
+  return api.patch(`/api/admin/applications/${encodeURIComponent(id)}/approve`)
+}
+
+/**
+ * 11. PATCH /api/admin/applications/:id/reject - 拒绝注册申请
+ */
+export const rejectApplication = (id, reason) => {
+  return api.patch(`/api/admin/applications/${encodeURIComponent(id)}/reject`, { reason })
+}
+
+/**
+ * 12. GET /api/admin/invite-codes - 获取全部生成的邀请密钥
+ */
+export const getInviteCodes = () => {
+  return api.get('/api/admin/invite-codes')
+}
+
+/**
+ * 13. POST /api/admin/invite-codes - 生成带有使用上限与备注的 8 位邀请密钥
+ */
+export const createInviteCode = (data) => {
+  return api.post('/api/admin/invite-codes', data) // 包含 max_uses, expires_days, note
+}
+
+/**
+ * 14. DELETE /api/admin/invite-codes/:id - 吊销/物理注销邀请码
+ */
+export const deleteInviteCode = (id) => {
+  return api.delete(`/api/admin/invite-codes/${encodeURIComponent(id)}`)
+}

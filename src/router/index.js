@@ -1,9 +1,10 @@
 // 保存路径: src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/user' // 引入 Pinia 状态管理获取角色校验
 
 // 导入页面组件
 import Home from '../views/Home.vue'
-import ToolsView from '../views/ToolsView.vue'
+import ToolsView from '../views/Tools.vue' // 统一指向已建立好的 Tools.vue
 import Policy from '../views/Policy.vue'
 import Library from '../views/Library.vue'
 import Knowledge from '../views/Knowledge.vue'
@@ -18,7 +19,7 @@ const routes = [
     component: Home,
     meta: {
       title: '首页 - 城市规划研究平台',
-      requiresAuth: false // 不需要登录即可访问
+      requiresAuth: false
     }
   },
   {
@@ -74,6 +75,61 @@ const routes = [
       title: '用户注册 - 城市规划研究平台',
       requiresAuth: false
     }
+  },
+  
+  // ==========================================
+  // 【安全隔离：管理后台路由及其子版块】
+  // ==========================================
+  {
+    path: '/admin',
+    component: () => import('../views/admin/AdminLayout.vue'),
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'AdminDashboard',
+        component: () => import('../views/admin/AdminDashboard.vue'),
+        meta: { title: '数据统计 - 管理后台' }
+      },
+      // 1. 注册申请审核管理子路由
+      {
+        path: 'applications',
+        name: 'AdminApplications',
+        component: () => import('../views/admin/AdminApplications.vue'),
+        meta: { title: '注册审核 - 管理后台' }
+      },
+      // 2. 邀请码核发控制子路由
+      {
+        path: 'invite-codes',
+        name: 'AdminInviteCodes',
+        component: () => import('../views/admin/AdminInviteCodes.vue'),
+        meta: { title: '邀请码管理 - 管理后台' }
+      },
+      {
+        path: 'tools',
+        name: 'AdminTools',
+        component: () => import('../views/admin/AdminTools.vue'),
+        meta: { title: '工具管理 - 管理后台' }
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: () => import('../views/admin/AdminUsers.vue'),
+        meta: { title: '用户管理 - 管理后台' }
+      },
+      {
+        path: 'notices',
+        name: 'AdminNotices',
+        component: () => import('../views/admin/AdminNotices.vue'),
+        meta: { title: '通知公告 - 管理后台' }
+      },
+      {
+        path: 'settings',
+        name: 'AdminSettings',
+        component: () => import('../views/admin/AdminSettings.vue'),
+        meta: { title: '系统设置 - 管理后台' }
+      }
+    ]
   }
 ]
 
@@ -84,7 +140,7 @@ const router = createRouter({
 })
 
 // 全局前置守卫：控制访问权限与修改浏览器标签标题
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   // 1. 动态修改浏览器标签页的标题
   if (to.meta && to.meta.title) {
     document.title = to.meta.title
@@ -92,7 +148,26 @@ router.beforeEach((to, from, next) => {
     document.title = '城市规划研究平台'
   }
 
-  // 2. 检查该页面是否需要登录权限
+  // 2. 针对以 /admin 开头的后台管理路由进行高级鉴权
+  if (to.path.startsWith('/admin')) {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('未授权：请先登录管理员账号')
+      return next('/login')
+    }
+    const userStore = useUserStore()
+    if (!userStore.user) {
+      await userStore.checkAuth()
+    }
+    // 强制验证当前登录用户的 role 必须是 admin
+    if (userStore.user?.role !== 'admin') {
+      alert('安全防范：您的账户无权阅览管理后台系统。')
+      return next('/')
+    }
+    return next()
+  }
+
+  // 3. 检查前台普通页面是否需要登录权限
   if (to.meta.requiresAuth) {
     // 从 localStorage 中获取登录状态
     const isLoggedIn = localStorage.getItem('isLoggedIn')
