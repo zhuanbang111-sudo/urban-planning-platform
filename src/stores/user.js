@@ -35,14 +35,16 @@ export const useUserStore = defineStore('user', {
       }
     },
 
-    async register(email, password) {
+    // 替换 src/stores/user.js 中原有的 register 动作方法：
+    async register(regData) {
       try {
-        const res = await apiRegister(email, password)
-        return res
+        const res = await apiRegister(regData)
+        return res // 直接返回后端的成功载荷 { success: true }
       } catch (error) {
-        return {
-          success: false,
-          message: error.response?.data?.message || '网络连接异常'
+        // 捕获后端的报错详情并向页面展示（例如：“该邮箱已被注册”或“验证码无效”）
+        return { 
+          success: false, 
+          message: error.response?.data?.error || '网络连接异常，请稍后再试' 
         }
       }
     },

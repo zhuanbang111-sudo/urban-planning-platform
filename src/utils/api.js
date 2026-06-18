@@ -45,8 +45,9 @@ api.interceptors.response.use(
 // ---------------------------------------------------------
 
 // 1. 用户注册
-export const register = (email, password) =>
-  api.post('/api/register', { email, password })
+// 修改 src/utils/api.js 中的这行即可：
+export const register = (regData) =>
+  api.post('/api/register', regData)
 
 // 2. 用户登录
 export const login = (email, password) =>
