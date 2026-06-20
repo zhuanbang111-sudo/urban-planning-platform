@@ -17,7 +17,7 @@
         </div>
 
         <!-- 中间：电脑端导航链接（自适应隐藏） -->
-        <div class="hidden md:flex space-x-1 lg:space-x-4">
+        <div class="hidden md:flex space-x-1 lg:space-x-4 items-center">
           <router-link 
             v-for="link in navLinks" 
             :key="link.path"
@@ -26,6 +26,16 @@
             active-class="text-yellow-400 bg-blue-950 font-semibold border-b-2 border-yellow-400 rounded-b-none"
           >
             {{ link.name }}
+          </router-link>
+
+          <!-- 新增：仅管理员账户角色显示“后台管理”前后台跳转大通道 -->
+          <router-link
+            v-if="isAdmin"
+            to="/admin"
+            class="px-3 py-2 rounded-md text-sm font-medium hover:text-yellow-400 hover:bg-blue-900 transition-all duration-200"
+            active-class="text-yellow-400 bg-blue-950 font-semibold border-b-2 border-yellow-400 rounded-b-none"
+          >
+            后台管理
           </router-link>
         </div>
 
@@ -110,6 +120,17 @@
         >
           {{ link.name }}
         </router-link>
+
+        <!-- 新增：移动端“后台管理”快捷跳转，点击时同步收起折叠面板 -->
+        <router-link 
+          v-if="isAdmin"
+          to="/admin"
+          @click="closeMobileMenu"
+          class="block px-3 py-2 rounded-md text-base font-medium hover:text-yellow-400 hover:bg-blue-900 transition-colors"
+          active-class="text-yellow-400 bg-blue-900 font-semibold"
+        >
+          后台管理
+        </router-link>
       </div>
       
       <!-- 移动端：底部用户信息/登录控制区 -->
@@ -165,6 +186,8 @@ const navLinks = [
 ]
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
+const userRole = computed(() => userStore.user?.role || '')
+const isAdmin = computed(() => userRole.value === 'admin') // 新增：是否为管理员 computed 参数
 const userEmail = computed(() => userStore.user?.email || '')
 const userEmailTruncated = computed(() => {
   const value = userEmail.value

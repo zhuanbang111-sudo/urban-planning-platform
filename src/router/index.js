@@ -1,6 +1,5 @@
 // 保存路径: src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import { h } from 'vue' // 引入渲染函数，完美解决缺失文件导致的编译崩溃问题
 import { useUserStore } from '../stores/user'
 
 // 导入前台基础页面组件
@@ -11,54 +10,6 @@ import Library from '../views/Library.vue'
 import Knowledge from '../views/Knowledge.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-
-// ==========================================
-// 【内置高可靠性占位组件，100% 阻止云端编译崩溃】
-// ==========================================
-const AdminDashboard = {
-  render: () => h('div', { class: 'bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm space-y-3' }, [
-    h('h2', { class: 'text-2xl font-black text-gray-800 flex items-center space-x-2' }, [
-      h('span', '📊'), h('span', '平台数据大屏统计')
-    ]),
-    h('p', { class: 'text-sm text-gray-500 leading-relaxed' }, '该版块正在集成 Cloudflare D1 用户活跃周期分析，支持查看工具总调用、周活、日活增幅等指标。')
-  ])
-}
-
-const AdminTools = {
-  render: () => h('div', { class: 'bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm space-y-3' }, [
-    h('h2', { class: 'text-2xl font-black text-gray-800 flex items-center space-x-2' }, [
-      h('span', '🔧'), h('span', '规划工具卡片控制台')
-    ]),
-    h('p', { class: 'text-sm text-gray-500 leading-relaxed' }, '支持在此一键管理、编辑、置顶、上架或下架 tools 表中的市政计算模型及协作表格卡片。')
-  ])
-}
-
-const AdminUsers = {
-  render: () => h('div', { class: 'bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm space-y-3' }, [
-    h('h2', { class: 'text-2xl font-black text-gray-800 flex items-center space-x-2' }, [
-      h('span', '👥'), h('span', '用户管理与权限升级审批')
-    ]),
-    h('p', { class: 'text-sm text-gray-500 leading-relaxed' }, '支持管理员在此批量过滤注册用户、检索操作存根日志，并手动提升其 user_quota 权限。')
-  ])
-}
-
-const AdminNotices = {
-  render: () => h('div', { class: 'bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm space-y-3' }, [
-    h('h2', { class: 'text-2xl font-black text-gray-800 flex items-center space-x-2' }, [
-      h('span', '📢'), h('span', '平台全局广播通知公告')
-    ]),
-    h('p', { class: 'text-sm text-gray-500 leading-relaxed' }, '支持管理员在此统一编撰前台顶栏、侧栏全局广播公告、更新规范资料库动态。')
-  ])
-}
-
-const AdminSettings = {
-  render: () => h('div', { class: 'bg-white p-8 rounded-2xl border border-gray-200/80 shadow-sm space-y-3' }, [
-    h('h2', { class: 'text-2xl font-black text-gray-800 flex items-center space-x-2' }, [
-      h('span', '⚙'), h('span', '系统核心参数设置')
-    ]),
-    h('p', { class: 'text-sm text-gray-500 leading-relaxed' }, '支持在此快速微调 JWT 会话周期、重设 D1 连接池最大重连频次及默认注册等级。')
-  ])
-}
 
 // 定义路由表
 const routes = [
@@ -131,12 +82,15 @@ const routes = [
   {
     path: '/admin',
     component: () => import('../views/admin/AdminLayout.vue'),
-    meta: { requiresAuth: true },
+    meta: { 
+      requiresAuth: true,
+      fullWidth: true // 新增：代表突破 1280px 宽度限制，占满可用屏幕宽度
+    },
     children: [
       {
         path: '',
         name: 'AdminDashboard',
-        component: AdminDashboard, // 采用内置防崩组件
+        component: () => import('../views/admin/AdminDashboard.vue'),
         meta: { title: '数据统计 - 管理后台' }
       },
       {
@@ -154,25 +108,25 @@ const routes = [
       {
         path: 'tools',
         name: 'AdminTools',
-        component: AdminTools, // 采用内置防崩组件
+        component: () => import('../views/admin/AdminTools.vue'),
         meta: { title: '工具管理 - 管理后台' }
       },
       {
         path: 'users',
         name: 'AdminUsers',
-        component: AdminUsers, // 采用内置防崩组件
+        component: () => import('../views/admin/AdminUsers.vue'),
         meta: { title: '用户管理 - 管理后台' }
       },
       {
         path: 'notices',
         name: 'AdminNotices',
-        component: AdminNotices, // 采用内置防崩组件
+        component: () => import('../views/admin/AdminNotices.vue'),
         meta: { title: '通知公告 - 管理后台' }
       },
       {
         path: 'settings',
         name: 'AdminSettings',
-        component: AdminSettings, // 采用内置防崩组件
+        component: () => import('../views/admin/AdminSettings.vue'),
         meta: { title: '系统设置 - 管理后台' }
       }
     ]

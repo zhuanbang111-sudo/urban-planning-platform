@@ -6,8 +6,14 @@
     <!-- 1. 顶部导航栏组件 -->
     <NavBar />
 
-    <!-- 2. 中间页面主内容区：flex-grow 会自动拉伸撑开剩余空间，从而将页脚推至屏幕最底部 -->
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- 2. 中间页面主内容区：根据路由 meta 中的 fullWidth 参数动态决定是否突破 1280px (max-w-7xl) 限制 -->
+    <main 
+      :class="[
+        route.meta.fullWidth 
+          ? 'flex-grow w-full p-4 sm:p-6 lg:p-8' 
+          : 'flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8'
+      ]"
+    >
       <!-- 页面切换时的过渡效果容器 -->
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
@@ -23,10 +29,12 @@
 
 <script setup>
 import { onMounted } from 'vue'
+import { useRoute } from 'vue-router' // 引入路由状态对象
 import NavBar from './components/NavBar.vue'
 import FooterBar from './components/FooterBar.vue'
 import { useUserStore } from './stores/user'
 
+const route = useRoute()
 const userStore = useUserStore()
 
 onMounted(() => {
