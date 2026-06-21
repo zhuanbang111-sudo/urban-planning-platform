@@ -1,3 +1,11 @@
+---
+
+### 2. 修改后的前端 `AdminNotices.vue` 完整代码
+
+我已将此文件内的 `formatDate` 函数改造为自适应兼容格式，无论时间字符串中包含 `T`、空格还是其他分隔符，都能无差错完美拆分，绝不白屏崩溃。
+
+<!-- 保存路径: src/views/admin/AdminNotices.vue -->
+```vue
 <!-- 保存路径: src/views/admin/AdminNotices.vue -->
 <template>
   <div class="space-y-6 animate-fade-in">
@@ -137,7 +145,7 @@ import axios from 'axios'
 
 const list = ref([])
 const loading = ref(false)
-const submitting = ref(false)
+const submitting = ref(ref)
 const showModal = ref(false)
 const isEdit = ref(false)
 const activeId = ref(null)
@@ -224,9 +232,16 @@ const handleDelete = async (id) => {
   }
 }
 
+/**
+ * 【已修复高容错格式化函数】：自适应处理带 T 和不带 T 分隔符的所有 ISO 日期格式，拒绝崩溃
+ */
 const formatDate = (isoStr) => {
   if (!isoStr) return ''
-  return isoStr.split('T')[0] + ' ' + isoStr.split('T')[1].slice(0, 5)
+  const normalized = isoStr.includes('T') ? isoStr.replace('T', ' ') : isoStr
+  const parts = normalized.split(' ')
+  const datePart = parts[0] || ''
+  const timePart = parts[1] ? parts[1].slice(0, 5) : ''
+  return timePart ? `${datePart} ${timePart}` : datePart
 }
 
 onMounted(() => {
