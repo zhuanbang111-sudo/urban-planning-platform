@@ -128,49 +128,6 @@ const routes = [
         name: 'AdminSettings',
         component: () => import('../views/admin/AdminSettings.vue'),
         meta: { title: '系统设置 - 管理后台' }
-      },
-      // 新增 7 个高阶管理控制子版块路由
-      {
-        path: 'policy',
-        name: 'AdminPolicy',
-        component: () => import('../views/admin/AdminPolicy.vue'),
-        meta: { title: '政策库管理 - 管理后台' }
-      },
-      {
-        path: 'library',
-        name: 'AdminLibrary',
-        component: () => import('../views/admin/AdminLibrary.vue'),
-        meta: { title: '资料库管理 - 管理后台' }
-      },
-      {
-        path: 'knowledge',
-        name: 'AdminKnowledge',
-        component: () => import('../views/admin/AdminKnowledge.vue'),
-        meta: { title: '知识库管理 - 管理后台' }
-      },
-      {
-        path: 'ai-usage',
-        name: 'AdminAiUsage',
-        component: () => import('../views/admin/AdminAiUsage.vue'),
-        meta: { title: 'AI用量监测 - 管理后台' }
-      },
-      {
-        path: 'mail',
-        name: 'AdminMail',
-        component: () => import('../views/admin/AdminMail.vue'),
-        meta: { title: '邮件群发 - 管理后台' }
-      },
-      {
-        path: 'logs',
-        name: 'AdminLogs',
-        component: () => import('../views/admin/AdminLogs.vue'),
-        meta: { title: '操作日志 - 管理后台' }
-      },
-      {
-        path: 'export',
-        name: 'AdminExport',
-        component: () => import('../views/admin/AdminExport.vue'),
-        meta: { title: '数据备份导出 - 管理后台' }
       }
     ]
   }

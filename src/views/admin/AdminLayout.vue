@@ -1,79 +1,49 @@
 <!-- 保存路径: src/views/admin/AdminLayout.vue -->
 <template>
-  <div class="flex flex-col md:flex-row gap-6 min-h-[calc(100vh-16rem)]">
+  <div class="min-h-screen flex bg-gray-100 text-gray-800 -mx-4 sm:-mx-6 lg:-mx-8 -my-4 sm:-my-6 lg:-my-8">
     
-    <!-- 左侧固定分组管理菜单栏 (宽 220px) -->
-    <aside class="w-full md:w-56 flex-shrink-0">
-      <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm space-y-4">
-        
-        <!-- 顶部独立项：数据统计大屏 -->
-        <div>
-          <router-link 
-            to="/admin"
-            class="flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold text-gray-600 hover:text-blue-900 hover:bg-gray-50 transition-all duration-150"
-            exact-active-class="text-blue-900 bg-blue-50/50 font-black border-l-4 border-blue-900 pl-3 rounded-l-none rounded-r-xl shadow-inner-light"
-          >
-            <span class="text-base">📊</span>
-            <span>数据统计仪表盘</span>
-          </router-link>
+    <!-- 左侧固定侧边栏 (宽 220px, 深蓝色背景) -->
+    <aside class="w-56 bg-[#1e3a5f] text-white flex flex-col justify-between flex-shrink-0 shadow-xl relative z-20 min-h-screen">
+      <div>
+        <div class="h-16 flex items-center px-6 border-b border-blue-900 bg-blue-950 shadow-sm">
+          <span class="text-md font-black tracking-wider flex items-center space-x-2 text-yellow-400">
+            <span>⚙</span>
+            <span>管理后台</span>
+          </span>
         </div>
 
-        <!-- 组 1: 空间内容管理 -->
-        <div class="space-y-1">
-          <div class="px-4 py-1.5 border-b border-gray-100 mb-1 flex items-center justify-between">
-            <span class="text-xxs font-black text-gray-400 uppercase tracking-widest">规划内容管理</span>
-          </div>
+        <!-- 垂直导航链接 -->
+        <nav class="mt-6 px-3 space-y-1">
           <router-link 
-            v-for="item in contentMenu" 
+            v-for="item in menuItems" 
             :key="item.path"
             :to="item.path"
-            class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-blue-900 hover:bg-gray-50 transition-all duration-150"
-            active-class="text-blue-900 bg-blue-50/50 font-bold border-l-4 border-blue-900 pl-3 rounded-l-none rounded-r-xl"
+            class="flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 hover:bg-blue-900 hover:text-white"
+            :exact="item.exact"
+            active-class="text-yellow-400 bg-blue-950 font-bold border-l-4 border-yellow-400 rounded-l-none rounded-r-xl"
+            exact-active-class="text-yellow-400 bg-blue-950 font-bold border-l-4 border-yellow-400 rounded-l-none rounded-r-xl"
           >
-            <span class="text-base">{{ item.icon }}</span>
-            <span>{{ item.name }}</span>
+            <div class="flex items-center space-x-3">
+              <span class="text-base">{{ item.icon }}</span>
+              <span>{{ item.name }}</span>
+            </div>
           </router-link>
-        </div>
+        </nav>
+      </div>
 
-        <!-- 组 2: 用户与准入控制 -->
-        <div class="space-y-1">
-          <div class="px-4 py-1.5 border-b border-gray-100 mb-1 flex items-center justify-between">
-            <span class="text-xxs font-black text-gray-400 uppercase tracking-widest">用户与准入控制</span>
-          </div>
-          <router-link 
-            v-for="item in userMenu" 
-            :key="item.path"
-            :to="item.path"
-            class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-blue-900 hover:bg-gray-50 transition-all duration-150"
-            active-class="text-blue-900 bg-blue-50/50 font-bold border-l-4 border-blue-900 pl-3 rounded-l-none rounded-r-xl"
-          >
-            <span class="text-base">{{ item.icon }}</span>
-            <span>{{ item.name }}</span>
-          </router-link>
-        </div>
-
-        <!-- 组 3: 系统维护审计 -->
-        <div class="space-y-1">
-          <div class="px-4 py-1.5 border-b border-gray-100 mb-1 flex items-center justify-between">
-            <span class="text-xxs font-black text-gray-400 uppercase tracking-widest">系统安全审计</span>
-          </div>
-          <router-link 
-            v-for="item in systemMenu" 
-            :key="item.path"
-            :to="item.path"
-            class="flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-600 hover:text-blue-900 hover:bg-gray-50 transition-all duration-150"
-            active-class="text-blue-900 bg-blue-50/50 font-bold border-l-4 border-blue-900 pl-3 rounded-l-none rounded-r-xl"
-          >
-            <span class="text-base">{{ item.icon }}</span>
-            <span>{{ item.name }}</span>
-          </router-link>
-        </div>
-
+      <!-- 底部安全退出前台 -->
+      <div class="p-4 border-t border-blue-900">
+        <router-link 
+          to="/"
+          class="w-full flex items-center justify-center space-x-2 py-2 px-4 border border-gray-400 rounded-lg text-sm text-gray-300 hover:bg-white hover:text-blue-950 font-bold transition-all duration-200"
+        >
+          <span>← 返回前台</span>
+        </router-link>
       </div>
     </aside>
 
-    <!-- 右侧子页面内容渲染区域 -->
-    <div class="flex-grow min-w-0">
+    <!-- 右侧子页面内容渲染区 -->
+    <div class="flex-grow p-6 md:p-8 overflow-y-auto max-w-full">
       <router-view />
     </div>
 
@@ -81,35 +51,16 @@
 </template>
 
 <script setup>
-// 内容管理分流组
-const contentMenu = [
-  { name: '工具管理', path: '/admin/tools', icon: '🔧' },
-  { name: '政策库管理', path: '/admin/policy', icon: '📜' },
-  { name: '资料库管理', path: '/admin/library', icon: '📚' },
-  { name: '知识库管理', path: '/admin/knowledge', icon: '💡' }
-]
-
-// 用户及互动控制组
-const userMenu = [
-  { name: '注册审核', path: '/admin/applications', icon: '📋' },
-  { name: '邀请码管理', path: '/admin/invite-codes', icon: '🎫' },
-  { name: '用户管理', path: '/admin/users', icon: '👥' },
-  { name: 'AI用量监测', path: '/admin/ai-usage', icon: '📈' },
-  { name: '通知公告', path: '/admin/notices', icon: '📢' },
-  { name: '邮件群发', path: '/admin/mail', icon: '✉️' }
-]
-
-// 安全与系统审计组
-const systemMenu = [
-  { name: '操作日志', path: '/admin/logs', icon: '📝' },
-  { name: '数据备份导出', path: '/admin/export', icon: '💾' },
-  { name: '系统设置', path: '/admin/settings', icon: '⚙' }
+const menuItems = [
+  { name: '数据统计仪表盘', path: '/admin', icon: '📊', exact: true },
+  { name: '注册审核', path: '/admin/applications', icon: '📋', exact: false },
+  { name: '邀请码管理', path: '/admin/invite-codes', icon: '🎫', exact: false },
+  { name: '工具管理', path: '/admin/tools', icon: '🔧', exact: false },
+  { name: '用户管理', path: '/admin/users', icon: '👥', exact: false },
+  { name: '通知公告', path: '/admin/notices', icon: '📢', exact: false },
+  { name: '系统设置', path: '/admin/settings', icon: '⚙', exact: false }
 ]
 </script>
 
 <style scoped>
-.text-xxs { font-size: 0.65rem; }
-.shadow-inner-light {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
-}
 </style>

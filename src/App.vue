@@ -29,7 +29,7 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute } from 'vue-router' // 引入路由状态对象
 import NavBar from './components/NavBar.vue'
 import FooterBar from './components/FooterBar.vue'
 import { useUserStore } from './stores/user'

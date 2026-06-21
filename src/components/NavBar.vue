@@ -16,8 +16,8 @@
           </span>
         </div>
 
-        <!-- 中间：电脑端导航链接（自适应隐藏） -->
-        <div class="hidden md:flex space-x-1 lg:space-x-4 items-center">
+        <!-- 中间：电脑端导航链接 -->
+        <div class="hidden md:flex items-center space-x-1 lg:space-x-4">
           <router-link 
             v-for="link in navLinks" 
             :key="link.path"
@@ -121,15 +121,14 @@
           {{ link.name }}
         </router-link>
 
-        <!-- 新增：移动端“后台管理”快捷跳转，点击时同步收起折叠面板 -->
+        <!-- 移动端管理端便捷入口 -->
         <router-link 
           v-if="isAdmin"
           to="/admin"
           @click="closeMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium hover:text-yellow-400 hover:bg-blue-900 transition-colors"
-          active-class="text-yellow-400 bg-blue-900 font-semibold"
+          class="block px-3 py-2 rounded-md text-base font-bold bg-yellow-600 text-gray-955 hover:bg-yellow-500 transition-colors mt-2"
         >
-          后台管理
+          ⚙ 后台管理
         </router-link>
       </div>
       
@@ -146,7 +145,7 @@
           <router-link 
             to="/register" 
             @click="closeMobileMenu"
-            class="w-full text-center py-2 text-sm font-medium bg-yellow-500 text-gray-900 rounded hover:bg-yellow-400 font-semibold"
+            class="w-full text-center py-2 text-sm font-medium bg-yellow-500 text-gray-950 rounded hover:bg-yellow-400 font-semibold"
           >
             注册
           </router-link>
@@ -187,7 +186,7 @@ const navLinks = [
 
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 const userRole = computed(() => userStore.user?.role || '')
-const isAdmin = computed(() => userRole.value === 'admin') // 新增：是否为管理员 computed 参数
+const isAdmin = computed(() => userRole.value === 'admin')
 const userEmail = computed(() => userStore.user?.email || '')
 const userEmailTruncated = computed(() => {
   const value = userEmail.value
@@ -229,5 +228,4 @@ const goToHome = () => {
 </script>
 
 <style scoped>
-/* 使用 scoped 确保样式不会污染其他部分 */
 </style>
