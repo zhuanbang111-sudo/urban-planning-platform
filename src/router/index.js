@@ -84,7 +84,7 @@ const routes = [
     component: () => import('../views/admin/AdminLayout.vue'),
     meta: { 
       requiresAuth: true,
-      fullWidth: true // 新增：代表突破 1280px 宽度限制，占满可用屏幕宽度
+      fullWidth: true // 代表突破 1280px 宽度限制，占满可用屏幕宽度
     },
     children: [
       {
@@ -111,11 +111,39 @@ const routes = [
         component: () => import('../views/admin/AdminTools.vue'),
         meta: { title: '工具管理 - 管理后台' }
       },
+      // 1. 补齐内容：政策库管理子路由（紧跟在 tools 后面）
+      {
+        path: 'policy',
+        name: 'AdminPolicy',
+        component: () => import('../views/admin/AdminPolicy.vue'),
+        meta: { title: '政策库管理 - 管理后台' }
+      },
+      // 2. 补齐内容：资料库管理子路由
+      {
+        path: 'library',
+        name: 'AdminLibrary',
+        component: () => import('../views/admin/AdminLibrary.vue'),
+        meta: { title: '资料库管理 - 管理后台' }
+      },
+      // 3. 补齐内容：知识库管理子路由
+      {
+        path: 'knowledge',
+        name: 'AdminKnowledge',
+        component: () => import('../views/admin/AdminKnowledge.vue'),
+        meta: { title: '知识库管理 - 管理后台' }
+      },
       {
         path: 'users',
         name: 'AdminUsers',
         component: () => import('../views/admin/AdminUsers.vue'),
         meta: { title: '用户管理 - 管理后台' }
+      },
+      // 4. 补齐内容：AI用量监测子路由（紧跟在 users 后面）
+      {
+        path: 'ai-usage',
+        name: 'AdminAiUsage',
+        component: () => import('../views/admin/AdminAiUsage.vue'),
+        meta: { title: 'AI用量监测 - 管理后台' }
       },
       {
         path: 'notices',
@@ -123,11 +151,32 @@ const routes = [
         component: () => import('../views/admin/AdminNotices.vue'),
         meta: { title: '通知公告 - 管理后台' }
       },
+      // 5. 补齐内容：邮件群发子路由（紧跟在 notices 后面）
+      {
+        path: 'mail',
+        name: 'AdminMail',
+        component: () => import('../views/admin/AdminMail.vue'),
+        meta: { title: '邮件群发 - 管理后台' }
+      },
       {
         path: 'settings',
         name: 'AdminSettings',
         component: () => import('../views/admin/AdminSettings.vue'),
         meta: { title: '系统设置 - 管理后台' }
+      },
+      // 6. 补齐内容：操作日志子路由（追加在最后）
+      {
+        path: 'logs',
+        name: 'AdminLogs',
+        component: () => import('../views/admin/AdminLogs.vue'),
+        meta: { title: '操作日志 - 管理后台' }
+      },
+      // 7. 补齐内容：数据备份导出子路由（追加在最后）
+      {
+        path: 'export',
+        name: 'AdminExport',
+        component: () => import('../views/admin/AdminExport.vue'),
+        meta: { title: '数据备份导出 - 管理后台' }
       }
     ]
   }
