@@ -82,15 +82,17 @@ const stats = ref({
   activeInviteCodes: 0
 })
 
-const pendingCount = computed(() => stats.value.pendingApprovals)
+// 统一封装管理端带有 Token 的 Axios 头对象
+const getAdminHeaders = () => {
+  const token = localStorage.getItem('token')
+  return { headers: { Authorization: `Bearer ${token}` } }
+}
 
+// 调取后台仪表大盘统计数据
 const fetchDashboardStats = async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
-    const res = await axios.get('https://planning-platform-api.zhuanbang111.workers.dev/api/admin/dashboard-stats', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    const res = await axios.get('https://api.urbancopilot.qzz.io/api/admin/dashboard-stats', getAdminHeaders())
     stats.value = res.data
   } catch (err) {
     console.error('拉取大屏指标发生错误：', err)
@@ -99,11 +101,22 @@ const fetchDashboardStats = async () => {
   }
 }
 
+// 对应模板中的 @click 事件跳转
+const goToApplications = () => {
+  router.push('/admin/applications')
+}
+
 const openApproveModal = (app) => {
   router.push('/admin/applications')
 }
 
 onMounted(() => {
-  fetchList()
+  fetchDashboardStats() // 已更正为调取实际存在的拉取统计函数
 })
 </script>
+
+<style scoped>
+/* 优雅平滑过滤淡入加载动效 */
+.animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+</style>
