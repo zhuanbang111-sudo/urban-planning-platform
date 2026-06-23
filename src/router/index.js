@@ -18,7 +18,7 @@ const routes = [
     name: 'Home',
     component: Home,
     meta: {
-      title: '首页 - 城市规划研究平台',
+      title: '首页 - 城市基础设施规划研究平台',
       requiresAuth: false
     }
   },
@@ -27,7 +27,7 @@ const routes = [
     name: 'Tools',
     component: ToolsView,
     meta: {
-      title: '规划工具库 - 城市规划研究平台',
+      title: '规划工具库 - 城市基础设施规划研究平台',
       requiresAuth: false
     }
   },
@@ -36,7 +36,7 @@ const routes = [
     name: 'Policy',
     component: Policy,
     meta: {
-      title: '政策文件分析 - 城市规划研究平台',
+      title: '政策文件分析 - 城市基础设施规划研究平台',
       requiresAuth: true
     }
   },
@@ -45,7 +45,7 @@ const routes = [
     name: 'Library',
     component: Library,
     meta: {
-      title: '标准规范资料库 - 城市规划研究平台',
+      title: '标准规范资料库 - 城市基础设施规划研究平台',
       requiresAuth: false
     }
   },
@@ -54,7 +54,7 @@ const routes = [
     name: 'Knowledge',
     component: Knowledge,
     meta: {
-      title: '规划知识库 - 城市规划研究平台',
+      title: '规划知识库 - 城市基础设施规划研究平台',
       requiresAuth: false
     }
   },
@@ -63,7 +63,7 @@ const routes = [
     name: 'Login',
     component: Login,
     meta: {
-      title: '用户登录 - 城市规划研究平台',
+      title: '用户登录 - 城市基础设施规划研究平台',
       requiresAuth: false
     }
   },
@@ -72,7 +72,7 @@ const routes = [
     name: 'Register',
     component: Register,
     meta: {
-      title: '用户注册 - 城市规划研究平台',
+      title: '用户注册 - 城市基础设施规划研究平台',
       requiresAuth: false
     }
   },
@@ -194,7 +194,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.meta && to.meta.title) {
     document.title = to.meta.title
   } else {
-    document.title = '城市规划研究平台'
+    document.title = '城市基础设施规划研究平台'
   }
 
   // 2. 后台管理系统路由深度拦截防御

@@ -50,7 +50,7 @@ const triggerExport = async (tableName) => {
   exportingTable.value = tableName
   try {
     const token = localStorage.getItem('token')
-    const response = await fetch(`https://planning-platform-api.zhuanbang111.workers.dev/api/admin/export?table=${tableName}`, {
+    const response = await fetch(`https://api.urbancopilot.qzz.io/api/admin/export?table=${tableName}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`
