@@ -1,125 +1,105 @@
-<!-- 保存路径: src/views/admin/LibraryAdmin.vue -->
+<!-- 保存路径: src/views/admin/AdminKnowledge.vue -->
 <template>
   <div class="space-y-6">
-    <!-- 头部卡片 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <!-- 顶部状态栏 -->
+    <div class="bg-white rounded-xl border border-gray-150 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <span>📚</span> 知识库管理
+          <span>💡</span> 知识库管理
         </h1>
         <p class="text-sm text-gray-500 mt-1">
-          管理专业知识文件上传，控制游客、用户和会员的下载权限级别与定价。
+          管理城市更新、韧性城市设计笔记与学术文献资源。支持预览、定价与精细化特许下载授权。
         </p>
       </div>
-      <!-- 动作按钮区 -->
-      <div class="flex gap-2">
-        <button 
-          @click="activeTab = 'list'"
-          :class="[activeTab === 'list' ? 'bg-blue-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
-          class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150"
-        >
-          文件资源列表
-        </button>
-        <button 
-          @click="activeTab = 'purchases'"
-          :class="[activeTab === 'purchases' ? 'bg-blue-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
-          class="px-4 py-2 rounded-lg font-medium text-sm transition-all duration-150"
-        >
-          手动授权管理
-        </button>
-      </div>
+      <button 
+        @click="openCreateModal"
+        class="px-4 py-2 bg-blue-900 text-white hover:bg-blue-850 font-bold rounded-lg text-sm flex items-center gap-2 transition"
+      >
+        <span>➕</span> 录入新学术知识
+      </button>
     </div>
 
-    <!-- 异常状态提示 -->
-    <div v-if="errorMsg" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex justify-between items-center">
+    <!-- 异常状态横幅 -->
+    <div v-if="errorMsg" class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex justify-between items-center animate-fade-in">
       <p class="text-sm text-red-700 font-medium">{{ errorMsg }}</p>
       <button @click="errorMsg = ''" class="text-red-500 hover:text-red-800 text-xs">✕</button>
     </div>
 
-    <!-- 成功状态提示 -->
+    <!-- 成功状态横幅 -->
     <div v-if="successMsg" class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg flex justify-between items-center animate-fade-in">
       <p class="text-sm text-green-700 font-medium">✨ {{ successMsg }}</p>
       <button @click="successMsg = ''" class="text-green-500 hover:text-green-800 text-xs">✕</button>
     </div>
 
-    <!-- 子板块 1：文件资源列表 (CRUD) -->
-    <div v-if="activeTab === 'list'" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-      <!-- 搜索及新增 -->
-      <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div class="relative w-full sm:w-72">
+    <!-- 搜索筛选与列表 -->
+    <div class="bg-white rounded-xl border border-gray-150 shadow-sm overflow-hidden">
+      <div class="p-4 border-b border-gray-100 bg-gray-50/50">
+        <div class="relative w-full sm:w-80">
           <input 
             v-model="searchQuery" 
             type="text" 
-            placeholder="搜索资料名称/分类..." 
-            class="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 focus:bg-white"
+            placeholder="搜索学术课题或分类..." 
+            class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-900 focus:border-transparent"
           />
           <span class="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
         </div>
-        <button 
-          @click="openCreateModal"
-          class="w-full sm:w-auto px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold rounded-lg text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
-        >
-          <span>➕</span> 上传新资源文件
-        </button>
       </div>
 
-      <!-- 数据表 -->
+      <!-- 数据表格 -->
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-gray-50 text-gray-600 uppercase text-xs tracking-wider border-b border-gray-100">
-              <th class="py-3.5 px-6 font-semibold">资料名称 / 格式</th>
-              <th class="py-3.5 px-6 font-semibold">分类</th>
-              <th class="py-3.5 px-6 font-semibold">大小</th>
-              <th class="py-3.5 px-6 font-semibold">最低权限</th>
-              <th class="py-3.5 px-6 font-semibold">定价 (查看/下载)</th>
-              <th class="py-3.5 px-6 font-semibold">状态</th>
-              <th class="py-3.5 px-6 font-semibold text-center">操作</th>
+            <tr class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100 font-bold">
+              <th class="py-3 px-6">文献标题 / 实体文件</th>
+              <th class="py-3 px-6">二级分类</th>
+              <th class="py-3 px-6">大小</th>
+              <th class="py-3 px-6">阅读条件</th>
+              <th class="py-3 px-6">在线查看价</th>
+              <th class="py-3 px-6">下载解锁价</th>
+              <th class="py-3 px-6">状态</th>
+              <th class="py-3 px-6 text-center">操作区</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 text-sm">
             <tr v-if="loading" class="text-center">
-              <td colspan="7" class="py-10 text-gray-400">正在与边缘端 R2 存储桶同步中...</td>
+              <td colspan="8" class="py-12 text-gray-400 font-medium">正在读取学术知识物理存储索引...</td>
             </tr>
             <tr v-else-if="filteredResources.length === 0" class="text-center">
-              <td colspan="7" class="py-10 text-gray-400">库中暂无规范资料文件，点击右上方开始上传首份文档。</td>
+              <td colspan="8" class="py-12 text-gray-400 font-medium">暂无匹配的知识文献，请点击右上角开始录入。</td>
             </tr>
-            <tr v-else v-for="res in filteredResources" :key="res.id" class="hover:bg-gray-50/50 transition-colors">
-              <!-- 名称 -->
-              <td class="py-4 px-6 font-medium text-gray-900 max-w-xs truncate">
-                <div>{{ res.title }}</div>
-                <div class="text-xs text-gray-400 font-mono mt-0.5">{{ res.file_name || '未上传文件' }}</div>
+            <tr v-else v-for="res in filteredResources" :key="res.id" class="hover:bg-gray-50/50 transition-all">
+              <td class="py-4 px-6 max-w-xs">
+                <div class="font-bold text-gray-900 flex items-center gap-1.5">
+                  <span>💡</span>
+                  <span class="truncate block" :title="res.title">{{ res.title }}</span>
+                </div>
+                <div class="text-xs text-gray-400 font-mono mt-1 truncate" :title="res.file_name">{{ res.file_name }}</div>
               </td>
-              <!-- 分类 -->
-              <td class="py-4 px-6 text-gray-600">
-                <span class="px-2 py-1 bg-gray-100 rounded-md text-xs font-medium">{{ res.category || '未分类' }}</span>
-              </td>
-              <!-- 大小 -->
-              <td class="py-4 px-6 text-gray-500 font-mono text-xs">
-                {{ formatSize(res.file_size) }}
-              </td>
-              <!-- 最低权限 -->
               <td class="py-4 px-6">
-                <span :class="getLevelBadge(res.min_level)" class="px-2.5 py-1 rounded-full text-xs font-bold">
+                <span class="px-2 py-1 bg-gray-100 rounded-md text-xs font-medium text-gray-600">{{ res.category || '未指定' }}</span>
+              </td>
+              <td class="py-4 px-6 font-mono text-xs text-gray-500">{{ formatSize(res.file_size) }}</td>
+              <td class="py-4 px-6">
+                <span :class="getLevelBadge(res.min_level)" class="px-2.5 py-0.5 rounded-full text-xs font-bold">
                   {{ getLevelText(res.min_level) }}
                 </span>
               </td>
-              <!-- 定价 -->
-              <td class="py-4 px-6 text-gray-700 font-medium">
-                <div>👁 ￥{{ res.view_price || 0 }}</div>
-                <div class="text-xs text-gray-400 mt-0.5">📥 ￥{{ res.download_price || 0 }}</div>
-              </td>
-              <!-- 状态 -->
+              <td class="py-4 px-6 font-medium text-gray-700">{{ formatPrice(res.view_price) }}</td>
+              <td class="py-4 px-6 font-medium text-gray-700">{{ formatPrice(res.download_price) }}</td>
               <td class="py-4 px-6">
-                <span :class="res.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'" class="px-2 py-0.5 rounded text-xs font-medium">
-                  {{ res.status === 'active' ? '上架中' : '已下架' }}
+                <span :class="res.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'" class="px-2 py-0.5 rounded text-xs font-semibold">
+                  {{ res.status === 'active' ? '已上架' : '已下架' }}
                 </span>
               </td>
-              <!-- 操作 -->
               <td class="py-4 px-6 text-center">
-                <div class="flex justify-center gap-3">
-                  <button @click="openEditModal(res)" class="text-blue-900 hover:text-blue-700 font-semibold text-xs">编辑</button>
-                  <button @click="handleDelete(res)" class="text-red-600 hover:text-red-800 font-semibold text-xs">删除</button>
+                <div class="flex justify-center items-center gap-3">
+                  <button @click="handlePreview(res.id)" class="text-blue-900 hover:text-blue-700 font-bold text-xs">预览</button>
+                  <button @click="openEditModal(res)" class="text-indigo-600 hover:text-indigo-800 font-bold text-xs">编辑</button>
+                  <button @click="toggleStatus(res)" class="text-orange-600 hover:text-orange-800 font-bold text-xs">
+                    {{ res.status === 'active' ? '下架' : '上架' }}
+                  </button>
+                  <button @click="openPurchasesModal(res)" class="text-purple-600 hover:text-purple-800 font-bold text-xs">特许授权</button>
+                  <button @click="handleDelete(res)" class="text-red-500 hover:text-red-700 font-bold text-xs">删除</button>
                 </div>
               </td>
             </tr>
@@ -128,233 +108,164 @@
       </div>
     </div>
 
-    <!-- 子板块 2：手动授权管理 (购买记录管理) -->
-    <div v-if="activeTab === 'purchases'" class="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
-      <div class="border-b border-gray-100 pb-4">
-        <h2 class="text-lg font-bold text-gray-900">🎁 手动开通/分配下载查看权限</h2>
-        <p class="text-sm text-gray-500 mt-1">您可以直接为特定用户开通某款资料的「永久查看」或「永久下载」权，解决线下支付对账或科研专属赠送场景需求。</p>
-      </div>
-
-      <!-- 手动开通表单 -->
-      <form @submit.prevent="handleGrantPurchase" class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl items-end">
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1.5">用户登录邮箱 (Email)</label>
-          <input 
-            v-model="grantForm.user_email" 
-            type="email" 
-            required 
-            placeholder="例如: test@qq.com" 
-            class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-          />
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1.5">选择授权资料</label>
-          <select 
-            v-model="grantForm.resource_id" 
-            required
-            class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-          >
-            <option value="" disabled>-- 选择资源 --</option>
-            <option v-for="res in resources" :key="res.id" :value="res.id">{{ res.title }}</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1.5">授权开通权限类型</label>
-          <select 
-            v-model="grantForm.access_type" 
-            required
-            class="w-full px-3 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-          >
-            <option value="view">仅限在线查看 (View)</option>
-            <option value="download">允许本地下载 (Download)</option>
-          </select>
-        </div>
-        <button 
-          type="submit" 
-          :disabled="submitting"
-          class="w-full px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white font-bold rounded-lg text-sm transition-all h-[38px] flex items-center justify-center gap-1"
-        >
-          {{ submitting ? '授权中...' : '确认手动开通' }}
-        </button>
-      </form>
-
-      <!-- 授权记录列表 -->
-      <div class="space-y-3">
-        <h3 class="text-sm font-bold text-gray-700">📜 当前历史手动开通/购买授权记录</h3>
-        <div class="overflow-x-auto border border-gray-100 rounded-xl">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-gray-50 border-b border-gray-100 text-gray-600 text-xs uppercase tracking-wider">
-              <tr>
-                <th class="py-3 px-4 font-semibold">被授权用户</th>
-                <th class="py-3 px-4 font-semibold">授权资料名称</th>
-                <th class="py-3 px-4 font-semibold">权限级别</th>
-                <th class="py-3 px-4 font-semibold">开通时间</th>
-                <th class="py-3 px-4 font-semibold text-center">操作</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-150">
-              <tr v-if="purchasesLoading" class="text-center">
-                <td colspan="5" class="py-8 text-gray-400">正在拉取授权账单...</td>
-              </tr>
-              <tr v-else-if="purchases.length === 0" class="text-center">
-                <td colspan="5" class="py-8 text-gray-400">暂无手动开通的特许记录。</td>
-              </tr>
-              <tr v-else v-for="p in purchases" :key="p.id" class="hover:bg-gray-50/50">
-                <td class="py-3.5 px-4 font-medium text-gray-900">{{ p.email }}</td>
-                <td class="py-3.5 px-4 text-gray-600 max-w-xs truncate">{{ p.resource_title }}</td>
-                <td class="py-3.5 px-4">
-                  <span :class="p.access_type === 'download' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-blue-50 text-blue-700 border border-blue-200'" class="px-2 py-0.5 rounded text-xs font-bold">
-                    {{ p.access_type === 'download' ? '📥 物理下载' : '👁 仅线查看' }}
-                  </span>
-                </td>
-                <td class="py-3.5 px-4 text-gray-400 font-mono text-xs">{{ formatDate(p.created_at) }}</td>
-                <td class="py-3.5 px-4 text-center">
-                  <button @click="handleRevokePurchase(p.id)" class="text-red-500 hover:text-red-700 font-semibold text-xs">撤销授权</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 弹窗：新建 / 编辑资源 (纯响应式 Modal) -->
-    <div v-if="showModal" class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden animate-fade-in">
-        <!-- 弹窗头部 -->
+    <!-- 1. 新建/编辑资源大弹窗 (Modal) -->
+    <div v-if="showFormModal" class="fixed inset-0 z-40 bg-gray-950/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-fade-in">
         <div class="bg-blue-900 text-white px-6 py-4 flex justify-between items-center">
-          <h3 class="font-bold text-lg">
-            {{ isEditMode ? '🛠 编辑规范资料卡片' : '📤 上传规范资料及文件' }}
-          </h3>
-          <button @click="closeModal" class="text-white/80 hover:text-white text-xl">✕</button>
+          <h3 class="font-bold text-lg">{{ isEditMode ? '🛠 编辑笔记学术属性' : '📤 上传全新学术笔记' }}</h3>
+          <button @click="closeFormModal" class="text-white/80 hover:text-white text-xl">✕</button>
         </div>
 
-        <!-- 弹窗主体 -->
-        <form @submit.prevent="handleSaveResource" class="p-6 space-y-4">
-          <!-- 标题 -->
+        <form @submit.prevent="submitForm" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">文件显示标题 (Title) *</label>
-            <input 
-              v-model="resourceForm.title" 
-              type="text" 
-              required 
-              placeholder="请输入要在前台展示的文献标题" 
-              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-            />
+            <label class="block text-xs font-bold text-gray-700 mb-1">文件标题 *</label>
+            <input v-model="form.title" type="text" required placeholder="如：XX城市基础设施更新实录笔记" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900" />
           </div>
 
-          <!-- 描述 -->
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">内容简要描述 (Description)</label>
-            <textarea 
-              v-model="resourceForm.description" 
-              rows="2"
-              placeholder="简述该标准规划或政策的适用范围..." 
-              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-            ></textarea>
+            <label class="block text-xs font-bold text-gray-700 mb-1">笔记核心学术简析</label>
+            <textarea v-model="form.description" rows="3" placeholder="前沿成果分享及学术意义等说明..." class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900"></textarea>
           </div>
 
-          <!-- 分类和权限并排 -->
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">细分类别</label>
-              <input 
-                v-model="resourceForm.category" 
-                type="text" 
-                placeholder="如：给水工程 / 城市防洪" 
-                class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-              />
+              <label class="block text-xs font-bold text-gray-700 mb-1">二级分类</label>
+              <input v-model="form.category" type="text" placeholder="如：学术讲义 / 城市更新" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900" />
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">最低访问权限 *</label>
-              <select 
-                v-model="resourceForm.min_level" 
-                class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-              >
-                <option :value="0">访客自由访问 (0)</option>
-                <option :value="1">注册用户免费 (1)</option>
-                <option :value="2">仅限VIP会员 (2)</option>
+              <label class="block text-xs font-bold text-gray-700 mb-1">查看级别限制 *</label>
+              <select v-model.number="form.min_level" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900">
+                <option :value="0">公开（访客及所有人可读）</option>
+                <option :value="1">免费用户（需登录账号）</option>
+                <option :value="2">仅限会员（需付费或特许授权）</option>
               </select>
             </div>
           </div>
 
-          <!-- 价格设置 -->
-          <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+          <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-xl border border-gray-150">
             <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">在线查看价格 (CNY)</label>
-              <input 
-                v-model.number="resourceForm.view_price" 
-                type="number" 
-                step="0.01"
-                min="0"
-                class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-              />
+              <label class="block text-xs font-bold text-gray-700 mb-1">在线查看定价 *</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1.5 text-gray-400 text-sm">¥</span>
+                <input v-model.number="form.view_price_yuan" type="number" step="0.01" min="0" required class="w-full pl-6 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900" />
+              </div>
+              <span class="text-[10px] text-gray-400 mt-1 block">0表示免费查看</span>
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">本地下载价格 (CNY)</label>
-              <input 
-                v-model.number="resourceForm.download_price" 
-                type="number" 
-                step="0.01"
-                min="0"
-                class="w-full px-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-              />
+              <label class="block text-xs font-bold text-gray-700 mb-1">物理下载定价 *</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1.5 text-gray-400 text-sm">¥</span>
+                <input v-model.number="form.download_price_yuan" type="number" step="0.01" min="0" required class="w-full pl-6 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-900" />
+              </div>
+              <span class="text-[10px] text-gray-400 mt-1 block">0表示免费下载</span>
             </div>
           </div>
 
-          <!-- 状态设置 (仅编辑模式显示) -->
-          <div v-if="isEditMode">
-            <label class="block text-xs font-bold text-gray-700 mb-1">上下架状态</label>
-            <select 
-              v-model="resourceForm.status" 
-              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-blue-900"
-            >
-              <option value="active">正常上架提供浏览</option>
-              <option value="inactive">临时下架不展示</option>
-            </select>
-          </div>
-
-          <!-- R2 本地文件直传交互区 -->
-          <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50/50 transition-colors relative">
-            <input 
-              type="file" 
-              ref="fileInput"
-              @change="handleFileSelect"
-              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            />
-            <div class="space-y-1">
-              <p class="text-xl">📁</p>
-              <p class="text-sm font-bold text-blue-900">
-                {{ selectedFile ? '已选择替换文件:' : '点击选择或拖拽标准 PDF/Word 文件' }}
-              </p>
-              <p class="text-xs text-gray-400">
-                {{ selectedFile ? `${selectedFile.name} (${formatSize(selectedFile.size)})` : '支持任何非空文件，单文件上限 30MB' }}
-              </p>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">实体成果文件 (PDF/图片) *</label>
+            <div class="relative border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:bg-gray-50 transition">
+              <input type="file" ref="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" @change="onFileChange" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+              <div class="space-y-1">
+                <span class="text-xl">📁</span>
+                <p class="text-xs font-bold text-blue-900">{{ uploadFile ? '已载入:' : '拖入或点击上传物理文件' }}</p>
+                <p class="text-[10px] text-gray-400">{{ uploadFile ? `${uploadFile.name} (${formatSize(uploadFile.size)})` : '单文件大小在30MB以内' }}</p>
+              </div>
             </div>
+            <p v-if="isEditMode" class="text-[10px] text-gray-400 text-center mt-1">留空则保持原成果文件不变</p>
           </div>
-          <!-- 替换提示 (仅编辑模式显示) -->
-          <p v-if="isEditMode && !selectedFile" class="text-xxs text-gray-400 leading-normal text-center">
-            * 提示：如果您只想修改资料的标题、价格或权限级别，此处请留空，系统会自动沿用原有旧文件。
-          </p>
 
-          <!-- 按钮执行区 -->
-          <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
-            <button 
-              type="button" 
-              @click="closeModal" 
-              class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition"
-            >
-              取消
-            </button>
-            <button 
-              type="submit" 
-              :disabled="submitting"
-              class="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition flex items-center justify-center min-w-[100px]"
-            >
-              {{ submitting ? '上传处理中...' : '开始部署' }}
+          <div class="flex justify-end gap-2 border-t border-gray-100 pt-4">
+            <button type="button" @click="closeFormModal" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition">取消</button>
+            <button type="submit" :disabled="submitting" class="px-5 py-2 bg-blue-900 hover:bg-blue-850 text-white rounded-lg text-sm font-bold min-w-[90px] flex items-center justify-center transition">
+              {{ submitting ? '上传中...' : '提交部署' }}
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- 2. 手动特许授权管理弹窗 (Purchases Modal) -->
+    <div v-if="showPurchasesModal" class="fixed inset-0 z-40 bg-gray-950/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden animate-fade-in">
+        <div class="bg-purple-900 text-white px-6 py-4 flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-lg">特许授权管理</h3>
+            <p class="text-xs text-purple-200 mt-0.5">针对《{{ activeResource?.title }}》手动开辟权限</p>
+          </div>
+          <button @click="closePurchasesModal" class="text-white/80 hover:text-white text-xl">✕</button>
+        </div>
+
+        <div class="p-6 space-y-6">
+          <!-- 手动授权表单 -->
+          <form @submit.prevent="submitGrant" class="bg-gray-50 border border-gray-150 p-4 rounded-xl space-y-3">
+            <h4 class="text-xs font-bold text-gray-800 uppercase tracking-wide flex items-center gap-1">⚡ 新增手动特许开通通道</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-600 mb-1">用户邮箱 *</label>
+                <input v-model="grantForm.user_email" type="email" required placeholder="user@qq.com" class="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-900" />
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-600 mb-1">权限类型 *</label>
+                <select v-model="grantForm.access_type" class="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-900">
+                  <option value="view">仅限在线查看</option>
+                  <option value="download">完整下载权限</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-600 mb-1">实收金额 (元)</label>
+                <input v-model.number="grantForm.amount_yuan" type="number" step="0.01" min="0" class="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-900" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-600 mb-1">备注信息</label>
+              <input v-model="grantForm.note" type="text" placeholder="例如: 线下转账，或科研团队赠送" class="w-full px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-900" />
+            </div>
+            <div class="flex justify-end">
+              <button type="submit" :disabled="submittingGrant" class="px-4 py-1.5 bg-purple-900 hover:bg-purple-850 text-white text-xs font-bold rounded-lg flex items-center gap-1 transition">
+                {{ submittingGrant ? '执行中...' : '确认下发授权' }}
+              </button>
+            </div>
+          </form>
+
+          <!-- 授权记录展示区 -->
+          <div class="space-y-2">
+            <h4 class="text-xs font-bold text-gray-800">📜 现有开通记录列表</h4>
+            <div class="overflow-y-auto max-h-56 border border-gray-150 rounded-xl">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-gray-50 border-b border-gray-150 text-gray-500 font-bold">
+                  <tr>
+                    <th class="py-2 px-4">授权人邮箱</th>
+                    <th class="py-2 px-4">权限类型</th>
+                    <th class="py-2 px-4">实收金额</th>
+                    <th class="py-2 px-4">备注/建档</th>
+                    <th class="py-2 px-4 text-center">操作</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-if="purchasesLoading" class="text-center">
+                    <td colspan="5" class="py-6 text-gray-400">正在检索权限表单...</td>
+                  </tr>
+                  <tr v-else-if="purchases.length === 0" class="text-center">
+                    <td colspan="5" class="py-6 text-gray-400">暂无任何手动开通记录。</td>
+                  </tr>
+                  <tr v-else v-for="p in purchases" :key="p.id" class="hover:bg-gray-50/50">
+                    <td class="py-2 px-4 font-medium text-gray-900">{{ p.email }}</td>
+                    <td class="py-2 px-4">
+                      <span :class="p.access_type === 'download' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'" class="px-2 py-0.5 rounded font-bold">
+                        {{ p.access_type === 'download' ? '下载' : '查看' }}
+                      </span>
+                    </td>
+                    <td class="py-2 px-4 font-medium text-gray-700">¥{{ (p.amount / 100).toFixed(2) }}</td>
+                    <td class="py-2 px-4 text-gray-500 max-w-[150px] truncate" :title="p.note">{{ p.note || '-' }}</td>
+                    <td class="py-2 px-4 text-center">
+                      <button @click="handleRevokePurchase(p.id)" class="text-red-500 hover:text-red-700 font-bold">撤销</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -362,333 +273,290 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
-// ==========================================
-// 1. 初始化常量与路由响应状态
-// ==========================================
-const BASE_URL = 'https://api.urbancopilot.qzz.io' // 绑定您的大陆直连免签极速域名
-const activeTab = ref('list')
-const loading = ref(true)
-const purchasesLoading = ref(true)
-const submitting = ref(false)
+// 基础变量
+const BASE_URL = 'https://api.urbancopilot.qzz.io'
+const CURRENT_MODULE = 'knowledge'
 
 const resources = ref([])
 const purchases = ref([])
 const searchQuery = ref('')
+const loading = ref(true)
+const purchasesLoading = ref(true)
+const submitting = ref(false)
+const submittingGrant = ref(false)
 
 const errorMsg = ref('')
 const successMsg = ref('')
 
-// Modal 控制器
-const showModal = ref(false)
+// Modal控制
+const showFormModal = ref(false)
 const isEditMode = ref(false)
-const selectedFile = ref(null)
-const fileInput = ref(null)
+const showPurchasesModal = ref(false)
+const activeResource = ref(null)
 
-// 资源模型初始值
-const resourceForm = ref({
+// 资源上传对象
+const fileInput = ref(null)
+const uploadFile = ref(null)
+
+// 资源表单模型
+const form = ref({
   id: '',
   title: '',
   description: '',
   category: '',
   min_level: 2,
-  view_price: 0,
-  download_price: 0,
+  view_price_yuan: 0,
+  download_price_yuan: 0,
   status: 'active'
 })
 
-// 手动开通授权模型初始值
+// 特许开通表单模型
 const grantForm = ref({
   user_email: '',
-  resource_id: '',
-  access_type: 'view'
+  access_type: 'view',
+  amount_yuan: 0,
+  note: ''
 })
 
-// ==========================================
-// 2. 自定义过滤与格式化辅助函数
-// ==========================================
-const filteredResources = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase()
-  if (!query) return resources.value
-  return resources.value.filter(item => 
-    item.title?.toLowerCase().includes(query) || 
-    item.category?.toLowerCase().includes(query)
-  )
-})
-
-const formatSize = (bytes) => {
-  if (!bytes) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-const formatDate = (isoStr) => {
-  if (!isoStr) return ''
-  return isoStr.replace('T', ' ').substring(0, 19)
-}
-
-const getLevelText = (lvl) => {
-  if (lvl === 0) return '游客免登录'
-  if (lvl === 1) return '注册用户免费'
-  return '仅限VIP会员'
-}
-
-const getLevelBadge = (lvl) => {
-  if (lvl === 0) return 'bg-gray-100 text-gray-700'
-  if (lvl === 1) return 'bg-green-50 text-green-700 border border-green-200'
-  return 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-}
-
-// ==========================================
-// 3. API 请求安全封装 (附带 JWT Bearer Token)
-// ==========================================
-const getHeaders = () => {
+// 配置请求Token
+const getAxiosConfig = (isMultipart = false) => {
   const token = localStorage.getItem('token')
-  return {
-    'Authorization': `Bearer ${token}`
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
   }
+  return config
 }
 
-// 统一提取列表 (固定只查询本模块 'library' 下的所有 R2 文件资源)
+// 转换及格式化方法
+const toFen = (yuan) => Math.round(Number(yuan || 0) * 100)
+const formatPrice = (fen) => (!fen ? '免费' : `¥${(fen / 100).toFixed(2)}`)
+const formatSize = (bytes) => {
+  if (bytes === undefined || bytes === null) return '0 KB'
+  const kb = bytes / 1024
+  return kb < 1024 ? `${kb.toFixed(0)} KB` : `${(kb / 1024).toFixed(1)} MB`
+}
+const getLevelText = (lvl) => lvl === 0 ? '公开' : lvl === 1 ? '免费用户' : '仅会员'
+const getLevelBadge = (lvl) => lvl === 0 ? 'bg-green-50 text-green-700 border border-green-200' : lvl === 1 ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-orange-50 text-orange-700 border border-orange-200'
+
+// 数据筛选
+const filteredResources = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return resources.value
+  return resources.value.filter(r => r.title.toLowerCase().includes(q) || r.category?.toLowerCase().includes(q))
+})
+
+// 获取资源大盘数据
 const fetchResources = async () => {
   loading.value = true
   try {
-    const res = await fetch(`${BASE_URL}/api/admin/resources?module=library`, {
-      headers: getHeaders()
-    })
-    const data = await res.json()
-    if (res.ok) {
-      resources.value = data.resources || []
-    } else {
-      errorMsg.value = data.error || '获取资料库资源失败'
-    }
+    const res = await axios.get(`${BASE_URL}/api/admin/resources?module=${CURRENT_MODULE}`, getAxiosConfig())
+    resources.value = res.data.resources || []
   } catch (err) {
-    errorMsg.value = '连接服务器失败，请检查网络是否畅通。'
+    errorMsg.value = err.response?.data?.error || '拉取数据大盘异常'
   } finally {
     loading.value = false
   }
 }
 
-// 统一提取购买和手动特许账单
+// 物理流式预览
+const handlePreview = async (resourceId) => {
+  try {
+    const token = localStorage.getItem('token')
+    const response = await fetch(`${BASE_URL}/api/resources/${resourceId}/access?type=view`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    if (!response.ok) throw new Error('读取权限错误或文件损坏')
+    const blob = await response.blob()
+    const fileUrl = URL.createObjectURL(blob)
+    window.open(fileUrl, '_blank')
+  } catch (err) {
+    alert('预览失败: ' + err.message)
+  }
+}
+
+// 模态弹框管理
+const openCreateModal = () => {
+  isEditMode.value = false
+  uploadFile.value = null
+  form.value = { id: '', title: '', description: '', category: '', min_level: 2, view_price_yuan: 0, download_price_yuan: 0, status: 'active' }
+  showFormModal.value = true
+}
+
+const openEditModal = (item) => {
+  isEditMode.value = true
+  uploadFile.value = null
+  form.value = {
+    id: item.id,
+    title: item.title,
+    description: item.description || '',
+    category: item.category || '',
+    min_level: item.min_level,
+    view_price_yuan: item.view_price / 100,
+    download_price_yuan: item.download_price / 100,
+    status: item.status
+  }
+  showFormModal.value = true
+}
+
+const closeModal = () => {
+  showFormModal.value = false
+  uploadFile.value = null
+}
+
+const onFileChange = (e) => {
+  const file = e.target.files[0]
+  if (file) uploadFile.value = file
+}
+
+// 提交资源增改
+const submitForm = async () => {
+  if (submitting.value) return
+  errorMsg.value = ''
+  successMsg.value = ''
+
+  if (!isEditMode.value && !uploadFile.value) {
+    alert('创建模式下必须上传文件！')
+    return
+  }
+  if (uploadFile.value && uploadFile.value.size > 30 * 1024 * 1024) {
+    alert('文件大小不能超过30MB')
+    return
+  }
+
+  submitting.value = true
+  try {
+    const formData = new FormData()
+    formData.append('module', CURRENT_MODULE)
+    formData.append('title', form.value.title)
+    formData.append('description', form.value.description)
+    formData.append('category', form.value.category)
+    formData.append('min_level', String(form.value.min_level))
+    formData.append('view_price', String(toFen(form.value.view_price_yuan)))
+    formData.append('download_price', String(toFen(form.value.download_price_yuan)))
+    formData.append('status', form.value.status)
+    if (uploadFile.value) {
+      formData.append('file', uploadFile.value)
+    }
+    // 接续自 src/views/admin/AdminKnowledge.vue 中的 submitForm 逻辑：
+    if (isEditMode.value) {
+      await axios.put(`${BASE_URL}/api/admin/resources/${form.value.id}`, formData, getAxiosConfig(true))
+      successMsg.value = '学术知识属性已更新！'
+    } else {
+      await axios.post(`${BASE_URL}/api/admin/resources`, formData, getAxiosConfig(true))
+      successMsg.value = '大文件并入 R2 上架成功！'
+    }
+    closeFormModal()
+    fetchResources()
+  } catch (err) {
+    errorMsg.value = err.response?.data?.error || '上传并部署资源出错'
+  } finally {
+    submitting.value = false
+  }
+}
+
+// 物理单条快速切换状态
+const toggleStatus = async (item) => {
+  errorMsg.value = ''
+  successMsg.value = ''
+  const nextStatus = item.status === 'active' ? 'inactive' : 'active'
+  try {
+    const formData = new FormData()
+    formData.append('status', nextStatus)
+    await axios.put(`${BASE_URL}/api/admin/resources/${item.id}`, formData, getAxiosConfig(true))
+    successMsg.value = `状态已变更为: ${nextStatus === 'active' ? '上架中' : '下架中'}`
+    fetchResources()
+  } catch (err) {
+    errorMsg.value = err.response?.data?.error || '状态切换遭遇故障'
+  }
+}
+
+// 物理彻底卸载删除
+const handleDelete = async (item) => {
+  if (!confirm(`将同时删除R2中的文件，此操作不可恢复！\n安全确认：您真的要彻底删除《${item.title}》吗？`)) return
+  errorMsg.value = ''
+  successMsg.value = ''
+  try {
+    await axios.delete(`${BASE_URL}/api/admin/resources/${item.id}`, getAxiosConfig())
+    successMsg.value = '学术知识已被彻底清除。'
+    fetchResources()
+  } catch (err) {
+    errorMsg.value = err.response?.data?.error || '执行删除错误'
+  }
+}
+
+// 手动特许开通板块逻辑
+const openPurchasesModal = (item) => {
+  activeResource.value = item
+  grantForm.value = { user_email: '', access_type: 'view', amount_yuan: 0, note: '' }
+  showPurchasesModal.value = true
+  fetchPurchases()
+}
+
+const closePurchasesModal = () => {
+  showPurchasesModal.value = false
+  activeResource.value = null
+}
+
 const fetchPurchases = async () => {
   purchasesLoading.value = true
   try {
-    const res = await fetch(`${BASE_URL}/api/admin/purchases`, {
-      headers: getHeaders()
-    })
-    const data = await res.json()
-    if (res.ok) {
-      purchases.value = data.purchases || []
-    } else {
-      errorMsg.value = data.error || '拉取授权失败'
-    }
+    const res = await axios.get(`${BASE_URL}/api/admin/purchases?resource_id=${activeResource.value.id}`, getAxiosConfig())
+    purchases.value = res.data.purchases || []
   } catch (err) {
-    errorMsg.value = '连接授权服务器发生异常。'
+    console.error(err)
   } finally {
     purchasesLoading.value = false
   }
 }
 
-// ==========================================
-// 4. Modal 动作状态开闭
-// ==========================================
-const openCreateModal = () => {
-  isEditMode.value = false
-  selectedFile.value = null
-  resourceForm.value = {
-    id: '',
-    title: '',
-    description: '',
-    category: '',
-    min_level: 2,
-    view_price: 0,
-    download_price: 0,
-    status: 'active'
-  }
-  showModal.value = true
-}
-
-const openEditModal = (item) => {
-  isEditMode.value = true
-  selectedFile.value = null
-  resourceForm.value = { ...item }
-  showModal.value = true
-}
-
-const closeModal = () => {
-  showModal.value = false
-  selectedFile.value = null
-}
-
-const handleFileSelect = (e) => {
-  const file = e.target.files[0]
-  if (file) {
-    selectedFile.value = file
-  }
-}
-
-// ==========================================
-// 5. 新建和编辑（核心 Multipart/form-data 异步提交流）
-// ==========================================
-const handleSaveResource = async () => {
-  if (submitting.value) return
-  submitting.value = true
-  errorMsg.value = ''
-  successMsg.value = ''
-
+const submitGrant = async () => {
+  if (submittingGrant.value) return
+  submittingGrant.value = true
   try {
-    const formData = new FormData()
-    formData.append('module', 'knowledge') // 固定锁定属于：标准规范资料库 模块
-    formData.append('title', resourceForm.value.title)
-    formData.append('description', resourceForm.value.description)
-    formData.append('category', resourceForm.value.category)
-    formData.append('min_level', resourceForm.value.min_level)
-    formData.append('view_price', resourceForm.value.view_price)
-    formData.append('download_price', resourceForm.value.download_price)
-    formData.append('status', resourceForm.value.status)
-
-    // 新增模式：物理强制上传非空文件
-    if (!isEditMode.value) {
-      if (!selectedFile.value) {
-        errorMsg.value = '新建资源必须上传对应的规范实体文件！'
-        submitting.value = false
-        return
-      }
-      formData.append('file', selectedFile.value)
-    } else {
-      // 修改模式：只在用户选了新文件时才追加进行覆盖上传
-      if (selectedFile.value) {
-        formData.append('file', selectedFile.value)
-      }
+    const payload = {
+      user_email: grantForm.value.user_email,
+      resource_id: activeResource.value.id,
+      access_type: grantForm.value.access_type,
+      amount: toFen(grantForm.value.amount_yuan),
+      note: grantForm.value.note
     }
-
-    const url = isEditMode.value 
-      ? `${BASE_URL}/api/admin/resources/${resourceForm.value.id}` 
-      : `${BASE_URL}/api/admin/resources`
-    
-    const method = isEditMode.value ? 'PUT' : 'POST'
-
-    const res = await fetch(url, {
-      method,
-      headers: getHeaders(), // 注意：由 fetch 自动构建带 boundary 的 multipart/form-data，不可手动写 content-type
-      body: formData
-    })
-
-    const data = await res.json()
-    if (res.ok) {
-      successMsg.value = isEditMode.value ? '资料属性及配套文件覆盖更新成功！' : '大文件极速部署至 R2 成功，规范资源卡片已上架！'
-      closeModal()
-      fetchResources() // 刷新视图
-    } else {
-      errorMsg.value = data.error || '上传或保存失败'
-    }
-
+    await axios.post(`${BASE_URL}/api/admin/purchases`, payload, getAxiosConfig())
+    alert('特许授权配置成功下发！')
+    grantForm.value = { user_email: '', access_type: 'view', amount_yuan: 0, note: '' }
+    fetchPurchases()
   } catch (err) {
-    errorMsg.value = '文件或信息保存过程中发生网络未知故障。'
+    alert('授权开通失败: ' + (err.response?.data?.error || '网络未知连接错误'))
   } finally {
-    submitting.value = false
+    submittingGrant.value = false
   }
 }
 
-// ==========================================
-// 6. 文件规范删除物理回收
-// ==========================================
-const handleDelete = async (item) => {
-  if (!confirm(`安全确认：您确定要物理删除规范文件【${item.title}】吗？删除后存储桶 R2 内对应的物理文件将同步回收！此操作不可逆！`)) return
-  errorMsg.value = ''
-  successMsg.value = ''
-
-  try {
-    const res = await fetch(`${BASE_URL}/api/admin/resources/${item.id}`, {
-      method: 'DELETE',
-      headers: getHeaders()
-    })
-    const data = await res.json()
-    if (res.ok) {
-      successMsg.value = '资料卡片及云端物理文件已一并完成彻底回收删除。'
-      fetchResources()
-    } else {
-      errorMsg.value = data.error || '删除失败'
-    }
-  } catch (err) {
-    errorMsg.value = '发起物理回收删除请求异常。'
-  }
-}
-
-// ==========================================
-// 7. 手动分配购买授权逻辑
-// ==========================================
-const handleGrantPurchase = async () => {
-  if (submitting.value) return
-  submitting.value = true
-  errorMsg.value = ''
-  successMsg.value = ''
-
-  try {
-    const res = await fetch(`${BASE_URL}/api/admin/purchases`, {
-      method: 'POST',
-      headers: {
-        ...getHeaders(),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(grantForm.value)
-    })
-    const data = await res.json()
-    if (res.ok) {
-      successMsg.value = `成功为用户 [${grantForm.value.user_email}] 开通专属对应下载权限！`
-      grantForm.value.user_email = ''
-      grantForm.value.resource_id = ''
-      fetchPurchases()
-    } else {
-      errorMsg.value = data.error || '开通特许失败'
-    }
-  } catch (err) {
-    errorMsg.value = '与授权分配网关建立连接失败。'
-  } finally {
-    submitting.value = false
-  }
-}
-
-// 撤销手动开通的特许记录
 const handleRevokePurchase = async (id) => {
-  if (!confirm('安全确认：确定要彻底撤销这一条手动特许开通的权限记录吗？')) return
-  errorMsg.value = ''
-  successMsg.value = ''
-
+  if (!confirm('确定要撤销这一条开通特许权限吗？用户将再次受限于定价与等级策略限制。')) return
   try {
-    const res = await fetch(`${BASE_URL}/api/admin/purchases/${id}`, {
-      method: 'DELETE',
-      headers: getHeaders()
-    })
-    const data = await res.json()
-    if (res.ok) {
-      successMsg.value = '特许订单授权成功注销撤回。'
-      fetchPurchases()
-    } else {
-      errorMsg.value = data.error || '注销失败'
-    }
+    await axios.delete(`${BASE_URL}/api/admin/purchases/${id}`, getAxiosConfig())
+    alert('权限开辟已撤销！')
+    fetchPurchases()
   } catch (err) {
-    errorMsg.value = '撤回特权请求通讯失败。'
+    alert('撤销配置失败: ' + (err.response?.data?.error || '通信异常'))
   }
 }
 
-// ==========================================
-// 8. 挂载加载初始化数据
-// ==========================================
 onMounted(() => {
   fetchResources()
-  fetchPurchases()
 })
 </script>
 
 <style scoped>
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.18s ease-out forwards;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
+  from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: scale(1); }
 }
 </style>
