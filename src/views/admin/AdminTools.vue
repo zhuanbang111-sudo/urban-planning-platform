@@ -187,7 +187,7 @@ const getHeaders = () => {
 
 const fetchToolsList = async () => {
   try {
-    const res = await axios.get('https://planning-platform-api.zhuanbang111.workers.dev/api/admin/tools', {
+    const res = await axios.get('https://api.urbancopilot.qzz.io/api/admin/tools', {
       headers: getHeaders()
     })
     list.value = res.data.tools || []
@@ -222,11 +222,11 @@ const openEditModal = (tool) => {
 const handleSubmit = async () => {
   try {
     if (isEdit.value) {
-      await axios.put(`https://planning-platform-api.zhuanbang111.workers.dev/api/admin/tools/${editingId.value}`, form.value, {
+      await axios.put(`https://api.urbancopilot.qzz.io/api/admin/tools/${editingId.value}`, form.value, {
         headers: getHeaders()
       })
     } else {
-      await axios.post('https://planning-platform-api.zhuanbang111.workers.dev/api/admin/tools', form.value, {
+      await axios.post('https://api.urbancopilot.qzz.io/api/admin/tools', form.value, {
         headers: getHeaders()
       })
     }
@@ -240,7 +240,7 @@ const handleSubmit = async () => {
 const toggleStatus = async (tool) => {
   const newStatus = tool.status === 'active' ? 'inactive' : 'active'
   try {
-    await axios.put(`https://planning-platform-api.zhuanbang111.workers.dev/api/admin/tools/${tool.id}`, {
+    await axios.put(`https://api.urbancopilot.qzz.io/api/admin/tools/${tool.id}`, {
       status: newStatus
     }, {
       headers: getHeaders()
@@ -254,7 +254,7 @@ const toggleStatus = async (tool) => {
 const handleDelete = async (id) => {
   if (confirm('警告：此操作不可恢复，确定要永久删除该规划工具及其中所有的运行轨迹吗？')) {
     try {
-      await axios.delete(`https://planning-platform-api.zhuanbang111.workers.dev/api/admin/tools/${id}`, {
+      await axios.delete(`https://api.urbancopilot.qzz.io/api/admin/tools/${id}`, {
         headers: getHeaders()
       })
       await fetchToolsList()

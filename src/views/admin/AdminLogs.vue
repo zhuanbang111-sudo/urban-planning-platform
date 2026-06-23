@@ -94,7 +94,7 @@ const fetchLogs = async () => {
   loading.value = true
   try {
     const token = localStorage.getItem('token')
-    const res = await axios.get(`https://planning-platform-api.zhuanbang111.workers.dev/api/admin/logs?page=${page.value}`, {
+    const res = await axios.get(`https://api.urbancopilot.qzz.io/api/admin/logs?page=${page.value}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
