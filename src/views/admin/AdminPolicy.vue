@@ -5,10 +5,10 @@
     <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <span>📚</span> 资料库管理
+          <span>📚</span> 政策库管理
         </h1>
         <p class="text-sm text-gray-500 mt-1">
-          管理标准规范、文献文件上传，控制游客、用户和会员的下载权限级别与定价。
+          管理政策文件上传，控制游客、用户和会员的下载权限级别与定价。
         </p>
       </div>
       <!-- 动作按钮区 -->
