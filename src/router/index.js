@@ -151,7 +151,14 @@ const routes = [
         component: () => import('../views/admin/AdminNotices.vue'),
         meta: { title: '通知公告 - 管理后台' }
       },
-      // 5. 补齐内容：邮件群发子路由（紧跟在 notices 后面）
+      // 新增内容：建议反馈子路由
+      {
+        path: 'feedback',
+        name: 'AdminFeedback',
+        component: () => import('../views/admin/AdminFeedback.vue'),
+        meta: { title: '建议反馈 - 管理后台' }
+      },
+      // 5. 补齐内容：邮件群发子路由（紧跟在 feedback 后面）
       {
         path: 'mail',
         name: 'AdminMail',

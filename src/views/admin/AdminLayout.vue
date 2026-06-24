@@ -91,6 +91,7 @@ const menuGroups = [
       { name: '用户管理', path: '/admin/users', icon: '👥' },
       { name: 'AI用量监测', path: '/admin/ai-usage', icon: '📈' },
       { name: '通知公告', path: '/admin/notices', icon: '📢' },
+      { name: '建议反馈', path: '/admin/feedback', icon: '💡' },
       { name: '邮件群发', path: '/admin/mail', icon: '✉️' }
     ]
   },
