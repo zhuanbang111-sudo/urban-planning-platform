@@ -29,121 +29,140 @@
       </div>
     </section>
 
-    <!-- 2. 最新公告栏 (仅当有公告数据时才渲染) -->
-    <section v-if="notices.length > 0" class="space-y-4">
-      <div class="flex items-center justify-between border-b border-gray-150 pb-2">
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center space-x-2">
-          <span>📢</span>
-          <span>最新公告</span>
-        </h2>
-      </div>
-      <div class="space-y-3">
+    <!-- 2 & 2.5 合并后的：最新公告与限量邀请码左右双栏双翼面板 -->
+    <section 
+      v-if="notices.length > 0 || inviteCodes.length > 0" 
+      class="bg-white border border-gray-100 rounded-2xl shadow-sm p-6"
+    >
+      <div 
+        :class="[
+          'grid grid-cols-1 gap-6',
+          (notices.length > 0 && inviteCodes.length > 0) ? 'md:grid-cols-2' : ''
+        ]"
+      >
+        <!-- 左栏：最新公告 (仅当有公告数据时渲染) -->
         <div 
-          v-for="notice in notices" 
-          :key="notice.id"
-          class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-all duration-200 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          v-if="notices.length > 0" 
+          :class="[
+            'space-y-3',
+            (inviteCodes.length > 0) ? 'md:border-r md:border-gray-100 md:pr-6' : ''
+          ]"
         >
-          <div class="flex items-start space-x-3 flex-grow">
-            <span class="text-base text-blue-900 mt-0.5">📢</span>
-            <div class="space-y-1">
-              <h3 class="font-bold text-gray-900 text-sm sm:text-base">{{ notice.title }}</h3>
-              <p class="text-xs sm:text-sm text-gray-500 leading-relaxed break-all">
-                {{ truncateContent(notice.content, 80) }}
-              </p>
-            </div>
+          <!-- 调整后的公告精简小标题 -->
+          <div class="flex items-center gap-2 text-sm font-bold text-gray-900 mb-3">
+            <span>📢</span>
+            <span>最新公告</span>
           </div>
-          <div class="text-right flex-shrink-0 text-[11px] sm:text-xs text-gray-400 font-mono self-end md:self-center">
-            {{ formatDate(notice.created_at) }}
+          <!-- 紧凑单行公告列表 -->
+          <div class="space-y-1">
+            <div 
+              v-for="notice in notices" 
+              :key="notice.id"
+              class="flex items-center justify-between gap-4 py-2 border-b border-gray-100 last:border-b-0"
+            >
+              <div class="flex items-center space-x-2 min-w-0 flex-grow">
+                <span class="text-xs text-blue-900 flex-shrink-0">📢</span>
+                <h3 class="font-bold text-gray-800 text-xs sm:text-sm truncate" :title="notice.title">
+                  {{ notice.title }}
+                </h3>
+              </div>
+              <div class="text-[11px] text-gray-400 font-mono flex-shrink-0 whitespace-nowrap">
+                {{ formatDate(notice.created_at) }}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- 🆕 2.5 邀请码横向无缝滚动展示区 (仅当公开邀请码非空时渲染) -->
-    <section v-if="inviteCodes.length > 0" class="space-y-4">
-      <div class="flex items-center justify-between border-b border-gray-150 pb-2">
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center space-x-2">
-          <span>🎫</span>
-          <span>限量邀请码，先用先得</span>
-        </h2>
-        <router-link 
-          to="/register" 
-          class="text-sm font-bold text-blue-900 hover:text-blue-700 flex items-center transition"
-        >
-          立即注册 <span class="ml-1">→</span>
-        </router-link>
-      </div>
-
-      <!-- 横向循环滚动跑马灯容器 -->
-      <div class="relative w-full overflow-hidden bg-gray-50/80 py-4 rounded-2xl border border-gray-100">
-        <div class="marquee-track flex gap-4">
-          <!-- 第一组邀请码队列 -->
-          <div class="flex gap-4 shrink-0 marquee-content">
-            <div 
-              v-for="(item, idx) in inviteCodes" 
-              :key="'a-' + idx"
-              :class="[
-                item.status === 'available' 
-                  ? 'bg-white border border-blue-100 text-blue-900' 
-                  : 'bg-gray-100 border border-gray-200 text-gray-400 shadow-none'
-              ]"
-              class="flex items-center space-x-3 px-4 py-2 rounded-xl shadow-xs shrink-0"
-            >
-              <span 
-                class="font-mono font-bold text-sm tracking-wide" 
-                :class="{'line-through opacity-70': item.status === 'exhausted'}"
+        <!-- 右栏：限量邀请码 (仅当有邀请码时渲染) -->
+        <div v-if="inviteCodes.length > 0" class="flex flex-col justify-between">
+          <div>
+            <!-- 调整后的精简标题 -->
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                <span>🎫</span>
+                <span>限量邀请码，先用先得</span>
+              </h3>
+              <router-link 
+                to="/register" 
+                class="text-xs font-bold text-blue-900 hover:text-blue-700 flex items-center transition"
               >
-                {{ item.code }}
-              </span>
-              <span 
-                v-if="item.status === 'available'" 
-                class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold"
-              >
-                余量: {{ item.max_uses - item.used_count }} 次
-              </span>
-              <button 
-                v-if="item.status === 'available'" 
-                @click="copyInviteCode(item.code)"
-                class="text-xs px-2 py-0.5 bg-blue-900 text-white hover:bg-blue-800 rounded font-bold transition duration-150"
-              >
-                复制
-              </button>
-              <span v-else class="text-[10px] text-gray-400 font-semibold italic">已用完</span>
+                立即注册 <span class="ml-1">→</span>
+              </router-link>
             </div>
-          </div>
 
-          <!-- 第二组邀请码队列 (首尾无缝拼接渲染) -->
-          <div class="flex gap-4 shrink-0 marquee-content" aria-hidden="true">
-            <div 
-              v-for="(item, idx) in inviteCodes" 
-              :key="'b-' + idx"
-              :class="[
-                item.status === 'available' 
-                  ? 'bg-white border border-blue-100 text-blue-900' 
-                  : 'bg-gray-100 border border-gray-200 text-gray-400 shadow-none'
-              ]"
-              class="flex items-center space-x-3 px-4 py-2 rounded-xl shadow-xs shrink-0"
-            >
-              <span 
-                class="font-mono font-bold text-sm tracking-wide" 
-                :class="{'line-through opacity-70': item.status === 'exhausted'}"
-              >
-                {{ item.code }}
-              </span>
-              <span 
-                v-if="item.status === 'available'" 
-                class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold"
-              >
-                余量: {{ item.max_uses - item.used_count }} 次
-              </span>
-              <button 
-                v-if="item.status === 'available'" 
-                @click="copyInviteCode(item.code)"
-                class="text-xs px-2 py-0.5 bg-blue-900 text-white hover:bg-blue-800 rounded font-bold transition duration-150"
-              >
-                复制
-              </button>
-              <span v-else class="text-[10px] text-gray-400 font-semibold italic">已用完</span>
+            <!-- 横向循环滚动跑马灯容器 (去除了灰色卡片样式，纯靠外层白底衬托) -->
+            <div class="relative w-full overflow-hidden py-2">
+              <div class="marquee-track flex gap-4">
+                <!-- 第一组邀请码队列 -->
+                <div class="flex gap-4 shrink-0 marquee-content">
+                  <div 
+                    v-for="(item, idx) in inviteCodes" 
+                    :key="'a-' + idx"
+                    :class="[
+                      item.status === 'available' 
+                        ? 'bg-white border border-blue-100 text-blue-900 shadow-xs' 
+                        : 'bg-gray-100 border border-gray-200 text-gray-400 shadow-none'
+                    ]"
+                    class="flex items-center space-x-2 px-3 py-1.5 rounded-xl shrink-0"
+                  >
+                    <span 
+                      class="font-mono font-bold text-xs tracking-wide" 
+                      :class="{'line-through opacity-70': item.status === 'exhausted'}"
+                    >
+                      {{ item.code }}
+                    </span>
+                    <span 
+                      v-if="item.status === 'available'" 
+                      class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold whitespace-nowrap"
+                    >
+                      余量: {{ item.max_uses - item.used_count }} 次
+                    </span>
+                    <button 
+                      v-if="item.status === 'available'" 
+                      @click="copyInviteCode(item.code)"
+                      class="text-[11px] px-1.5 py-0.5 bg-blue-900 text-white hover:bg-blue-800 rounded font-bold transition duration-150"
+                    >
+                      复制
+                    </button>
+                    <span v-else class="text-[10px] text-gray-400 font-semibold italic whitespace-nowrap">已用完</span>
+                  </div>
+                </div>
+
+                <!-- 第二组邀请码队列 (首尾无缝拼接) -->
+                <div class="flex gap-4 shrink-0 marquee-content" aria-hidden="true">
+                  <div 
+                    v-for="(item, idx) in inviteCodes" 
+                    :key="'b-' + idx"
+                    :class="[
+                      item.status === 'available' 
+                        ? 'bg-white border border-blue-100 text-blue-900 shadow-xs' 
+                        : 'bg-gray-100 border border-gray-200 text-gray-400 shadow-none'
+                    ]"
+                    class="flex items-center space-x-2 px-3 py-1.5 rounded-xl shrink-0"
+                  >
+                    <span 
+                      class="font-mono font-bold text-xs tracking-wide" 
+                      :class="{'line-through opacity-70': item.status === 'exhausted'}"
+                    >
+                      {{ item.code }}
+                    </span>
+                    <span 
+                      v-if="item.status === 'available'" 
+                      class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold whitespace-nowrap"
+                    >
+                      余量: {{ item.max_uses - item.used_count }} 次
+                    </span>
+                    <button 
+                      v-if="item.status === 'available'" 
+                      @click="copyInviteCode(item.code)"
+                      class="text-[11px] px-1.5 py-0.5 bg-blue-900 text-white hover:bg-blue-800 rounded font-bold transition duration-150"
+                    >
+                      复制
+                    </button>
+                    <span v-else class="text-[10px] text-gray-400 font-semibold italic whitespace-nowrap">已用完</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
