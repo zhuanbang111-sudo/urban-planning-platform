@@ -37,7 +37,7 @@ const routes = [
     component: Policy,
     meta: {
       title: '政策文件分析 - 城市基础设施规划研究平台',
-      requiresAuth: true
+      requiresAuth: false
     }
   },
   {
