@@ -111,7 +111,7 @@
               class="w-full px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-950 font-medium text-xs rounded-lg transition-colors border border-amber-200 flex items-center justify-center gap-1"
             >
               <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '前往查看 (免费)' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.view_price === 0 ? '前往查看' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
             </button>
           </div>
           <div v-else class="grid grid-cols-2 gap-3">
@@ -120,14 +120,14 @@
               class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-950 font-medium text-xs rounded-lg transition-colors border border-amber-200 flex items-center justify-center gap-1"
             >
               <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '查看 (免费)' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.view_price === 0 ? '查看' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
             </button>
             <button 
               @click="handleAccess(item, 'download')"
               class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-1"
             >
               <span>📥</span>
-              <span>{{ item.download_price === 0 ? '下载 (免费)' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.download_price === 0 ? '下载' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
             </button>
           </div>
         </div>
