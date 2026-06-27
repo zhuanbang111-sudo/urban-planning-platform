@@ -6,15 +6,15 @@
       <nav class="text-sm text-gray-500 mb-2 flex items-center space-x-2">
         <router-link to="/" class="hover:text-green-950">首页</router-link>
         <span>&gt;</span>
-        <span class="text-gray-800 font-medium">标准规范资料库</span>
+        <span class="text-gray-800 font-medium">资料库</span>
       </nav>
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <span>📚</span> 标准规范资料库
+            <span>📚</span> 资料库
           </h1>
           <p class="text-sm text-gray-600 mt-1">
-            系统收录城市给排水、道路交通、海绵城市施工图集等行业现行及地方推荐性设计标准。
+            系统收录城市基础设施规划建设现行及地方标准、规范、规划等文件。
           </p>
         </div>
         <!-- 分类筛选下拉框 -->
@@ -37,14 +37,14 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
-        <span class="text-sm text-gray-500">正在调阅规范资料名册...</span>
+        <span class="text-sm text-gray-500">正在调阅资料名册...</span>
       </div>
     </div>
 
     <!-- 空列表状态 -->
     <div v-else-if="filteredResources.length === 0" class="py-16 text-center bg-white border border-gray-200 rounded-2xl shadow-sm">
       <span class="text-4xl">📂</span>
-      <h3 class="text-lg font-bold text-gray-800 mt-4">暂无相关规范图集</h3>
+      <h3 class="text-lg font-bold text-gray-800 mt-4">暂无相关资料</h3>
       <p class="text-sm text-gray-500 mt-1 max-w-sm mx-auto">当前分类下暂未发布任何资料文本，敬请期待系统更新发布。</p>
     </div>
 
@@ -88,7 +88,7 @@
               v-if="item.min_level === 0" 
               class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 text-xs rounded-md font-semibold"
             >
-              公开免费
+              公开
             </span>
             <span 
               v-else-if="item.min_level === 1" 

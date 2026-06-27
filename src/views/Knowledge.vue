@@ -6,15 +6,15 @@
       <nav class="text-sm text-gray-500 mb-2 flex items-center space-x-2">
         <router-link to="/" class="hover:text-amber-950">首页</router-link>
         <span>&gt;</span>
-        <span class="text-gray-800 font-medium">规划知识库</span>
+        <span class="text-gray-800 font-medium">知识库</span>
       </nav>
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <span>💡</span> 规划知识库
+            <span>💡</span> 知识库
           </h1>
           <p class="text-sm text-gray-600 mt-1">
-            聚合国内外韧性城市设计、海绵项目案例解析以及计算模型的参数调优学术笔记。
+            聚合国内外城市基础设施规划建设的学术研究成果、政策文件、标准规范、规划设计案例及笔记。
           </p>
         </div>
         <!-- 分类筛选下拉框 -->
@@ -88,7 +88,7 @@
               v-if="item.min_level === 0" 
               class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 text-xs rounded-md font-semibold"
             >
-              公开免费
+              公开
             </span>
             <span 
               v-else-if="item.min_level === 1" 

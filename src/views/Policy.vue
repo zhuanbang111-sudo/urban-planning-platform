@@ -14,7 +14,7 @@
             <span>📜</span> 政策文件分析
           </h1>
           <p class="text-sm text-gray-600 mt-1">
-            提供国家与地方级低影响开发、雨洪管理及海绵城市建设核心政策文件的分类导读与在线调阅。
+            提供城市基础设施规划建设核心政策文件的分类导读与在线调阅。
           </p>
         </div>
         <!-- 分类筛选下拉框 -->
@@ -88,7 +88,7 @@
               v-if="item.min_level === 0" 
               class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 text-xs rounded-md font-semibold"
             >
-              公开免费
+              公开
             </span>
             <span 
               v-else-if="item.min_level === 1" 
@@ -111,7 +111,7 @@
               class="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-950 font-medium text-xs rounded-lg transition-colors border border-blue-200 flex items-center justify-center gap-1"
             >
               <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '前往查看 (免费)' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.view_price === 0 ? '前往查看' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
             </button>
           </div>
           <div v-else class="grid grid-cols-2 gap-3">
@@ -120,14 +120,14 @@
               class="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-950 font-medium text-xs rounded-lg transition-colors border border-blue-200 flex items-center justify-center gap-1"
             >
               <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '查看 (免费)' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.view_price === 0 ? '查看 ' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
             </button>
             <button 
               @click="handleAccess(item, 'download')"
               class="px-3 py-2 bg-blue-900 hover:bg-blue-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-1"
             >
               <span>📥</span>
-              <span>{{ item.download_price === 0 ? '下载 (免费)' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.download_price === 0 ? '下载 ' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
             </button>
           </div>
         </div>
