@@ -105,7 +105,16 @@
           </div>
 
           <!-- 功能操作区 -->
-          <div class="grid grid-cols-2 gap-3">
+          <div v-if="item.source_type === 'external'">
+            <button 
+              @click="handleAccess(item, 'view')"
+              class="w-full px-3 py-2 bg-green-50 hover:bg-green-100 text-green-950 font-medium text-xs rounded-lg transition-colors border border-green-200 flex items-center justify-center gap-1"
+            >
+              <span>👁️</span>
+              <span>{{ item.view_price === 0 ? '前往查看 (免费)' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+            </button>
+          </div>
+          <div v-else class="grid grid-cols-2 gap-3">
             <button 
               @click="handleAccess(item, 'view')"
               class="px-3 py-2 bg-green-50 hover:bg-green-100 text-green-950 font-medium text-xs rounded-lg transition-colors border border-green-200 flex items-center justify-center gap-1"
@@ -299,6 +308,12 @@ const handleAccess = async (item, type) => {
         alert('登录态已失效或需要重新登录')
         userStore.logout?.()
         router.push('/login')
+        return
+      }
+
+      // 外部链接，通过直接打开
+      if (data.external === true) {
+        window.open(data.url, '_blank')
         return
       }
 

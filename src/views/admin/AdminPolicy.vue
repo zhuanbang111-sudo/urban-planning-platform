@@ -63,10 +63,17 @@
               <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{{ item.category || '未分类' }}</td>
               <!-- 文件名 -->
               <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" :title="item.file_name">
-                {{ item.file_name || '-' }}
+                <span v-if="item.source_type === 'external'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-xs">
+                  🔗 外部链接
+                </span>
+                <span v-else>
+                  {{ item.file_name || '-' }}
+                </span>
               </td>
               <!-- 大小 -->
-              <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{{ formatFileSize(item.file_size) }}</td>
+              <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                {{ item.source_type === 'external' ? '-' : formatFileSize(item.file_size) }}
+              </td>
               <!-- 等级 -->
               <td class="px-6 py-4 text-sm whitespace-nowrap">
                 <span :class="getLevelClass(item.min_level)" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border shadow-xs">
@@ -76,7 +83,9 @@
               <!-- 预览价格 -->
               <td class="px-6 py-4 text-sm font-semibold text-gray-700 whitespace-nowrap">{{ formatPrice(item.view_price) }}</td>
               <!-- 下载价格 -->
-              <td class="px-6 py-4 text-sm font-semibold text-gray-700 whitespace-nowrap">{{ formatPrice(item.download_price) }}</td>
+              <td class="px-6 py-4 text-sm font-semibold text-gray-700 whitespace-nowrap">
+                {{ item.source_type === 'external' ? '-' : formatPrice(item.download_price) }}
+              </td>
               <!-- 状态 -->
               <td class="px-6 py-4 text-center whitespace-nowrap">
                 <span :class="item.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-400 border-gray-200'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border shadow-xs">
@@ -85,7 +94,7 @@
               </td>
               <!-- 操作 -->
               <td class="px-6 py-4 text-sm text-right space-x-2 whitespace-nowrap">
-                <button @click="handlePreview(item.id)" class="text-blue-600 hover:text-blue-800 font-semibold text-xs">预览</button>
+                <button @click="handlePreview(item)" class="text-blue-600 hover:text-blue-800 font-semibold text-xs">预览</button>
                 <button @click="openEditModal(item)" class="text-yellow-600 hover:text-yellow-800 font-semibold text-xs">编辑</button>
                 <button @click="toggleStatus(item)" :class="item.status === 'active' ? 'text-gray-500 hover:text-gray-700' : 'text-green-600 hover:text-green-800'" class="font-semibold text-xs">
                   {{ item.status === 'active' ? '下架' : '上架' }}
@@ -114,6 +123,29 @@
             <input v-model="form.title" type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请输入政策法规标准名称">
           </div>
 
+          <!-- 内容来源选择 -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1.5">内容来源 *</label>
+            <div class="grid grid-cols-2 gap-3">
+              <button 
+                type="button"
+                @click="form.source_type = 'upload'"
+                :class="form.source_type === 'upload' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20' : 'bg-gray-50 border-gray-300 text-gray-600'"
+                class="flex items-center justify-center gap-2 py-2 border rounded-lg text-sm font-semibold transition-all"
+              >
+                <span>📤</span> 上传文件
+              </button>
+              <button 
+                type="button"
+                @click="form.source_type = 'external'"
+                :class="form.source_type === 'external' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20' : 'bg-gray-50 border-gray-300 text-gray-600'"
+                class="flex items-center justify-center gap-2 py-2 border rounded-lg text-sm font-semibold transition-all"
+              >
+                <span>🔗</span> 外部链接
+              </button>
+            </div>
+          </div>
+
           <!-- 描述 -->
           <div>
             <label class="block text-xs font-bold text-gray-700 mb-1">描述与简介</label>
@@ -137,7 +169,7 @@
           </div>
 
           <!-- 价格体系 -->
-          <div class="grid grid-cols-2 gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
+          <div :class="form.source_type === 'external' ? 'grid-cols-1' : 'grid-cols-2'" class="grid gap-4 bg-gray-50 p-3 rounded-lg border border-gray-200">
             <div>
               <label class="block text-xs font-bold text-gray-700 mb-1">
                 查看价格 (元)
@@ -145,7 +177,7 @@
               <input v-model.number="form.view_price_yuan" type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
               <span class="text-[10px] text-gray-400 mt-1 block">0表示免费，单位：元</span>
             </div>
-            <div>
+            <div v-if="form.source_type === 'upload'">
               <label class="block text-xs font-bold text-gray-700 mb-1">
                 下载价格 (元)
               </label>
@@ -154,19 +186,34 @@
             </div>
           </div>
 
-          <!-- 物理文件上传区域 -->
+          <!-- 物理文件上传区域 / 外部链接输入框 -->
           <div class="border-t pt-4">
-            <label class="block text-xs font-bold text-gray-700 mb-1">
-              政策关联文件 {{ isEdit ? '(选填)' : '*' }}
-            </label>
-            <input 
-              type="file" 
-              @change="handleFileChange" 
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" 
-              :required="!isEdit"
-              class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            >
-            <span class="text-[10px] text-gray-400 block mt-1">支持格式: .pdf, .doc, .docx, .jpg, .png，且单文件限制大小 30MB 字节。</span>
+            <div v-if="form.source_type === 'upload'">
+              <label class="block text-xs font-bold text-gray-700 mb-1">
+                政策关联文件 {{ isEdit ? '(选填)' : '*' }}
+              </label>
+              <input 
+                type="file" 
+                @change="handleFileChange" 
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" 
+                :required="!isEdit"
+                class="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              >
+              <span class="text-[10px] text-gray-400 block mt-1">支持格式: .pdf, .doc, .docx, .jpg, .png，且单文件限制大小 30MB 字节。</span>
+            </div>
+            <div v-else>
+              <label class="block text-xs font-bold text-gray-700 mb-1">
+                外部链接地址 *
+              </label>
+              <input 
+                v-model="form.external_url" 
+                type="url" 
+                required
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="https://example.com/document"
+              >
+              <span class="text-[10px] text-gray-400 block mt-1">请输入以 http:// 或 https:// 开头的有效外部链接。</span>
+            </div>
           </div>
 
           <!-- 底部控制按钮 -->
@@ -283,7 +330,9 @@ const form = ref({
   category: '',
   min_level: 0,
   view_price_yuan: 0,
-  download_price_yuan: 0
+  download_price_yuan: 0,
+  source_type: 'upload',
+  external_url: ''
 })
 
 // 订单/特许授权 Modal 状态
@@ -322,11 +371,15 @@ const fetchResources = async () => {
   }
 }
 
-// 2. 物理预览资源文件（管理员放行直通）
-const handlePreview = async (id) => {
+// 2. 预览资源文件（管理员放行直通）
+const handlePreview = async (item) => {
+  if (item.source_type === 'external') {
+    window.open(item.external_url, '_blank')
+    return
+  }
   try {
     const token = localStorage.getItem('token')
-    const response = await fetch(`${API_BASE}/api/resources/${id}/access?type=view`, {
+    const response = await fetch(`${API_BASE}/api/resources/${item.id}/access?type=view`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -371,6 +424,10 @@ const toggleStatus = async (item) => {
     formData.append('view_price', String(item.view_price))
     formData.append('download_price', String(item.download_price))
     formData.append('status', newStatus)
+    formData.append('source_type', item.source_type || 'upload')
+    if (item.source_type === 'external') {
+      formData.append('external_url', item.external_url || '')
+    }
 
     const res = await axios.put(`${API_BASE}/api/admin/resources/${item.id}`, formData, {
       headers: getHeaders()
@@ -394,7 +451,9 @@ const openAddModal = () => {
     category: '',
     min_level: 0,
     view_price_yuan: 0,
-    download_price_yuan: 0
+    download_price_yuan: 0,
+    source_type: 'upload',
+    external_url: ''
   }
   showFormModal.value = true
 }
@@ -409,7 +468,9 @@ const openEditModal = (item) => {
     category: item.category || '',
     min_level: item.min_level,
     view_price_yuan: Number((item.view_price / 100).toFixed(2)),
-    download_price_yuan: Number((item.download_price / 100).toFixed(2))
+    download_price_yuan: Number((item.download_price / 100).toFixed(2)),
+    source_type: item.source_type || 'upload',
+    external_url: item.external_url || ''
   }
   showFormModal.value = true
 }
@@ -437,11 +498,18 @@ const submitForm = async () => {
     formData.append('description', form.value.description || '')
     formData.append('category', form.value.category || '')
     formData.append('min_level', String(form.value.min_level))
-    formData.append('view_price', String(Math.round(form.value.view_price_yuan * 100)))
-    formData.append('download_price', String(Math.round(form.value.download_price_yuan * 100)))
+    formData.append('source_type', form.value.source_type)
 
-    if (selectedFile.value) {
-      formData.append('file', selectedFile.value)
+    if (form.value.source_type === 'external') {
+      formData.append('external_url', form.value.external_url)
+      formData.append('view_price', String(Math.round(form.value.view_price_yuan * 100)))
+      formData.append('download_price', '0')
+    } else {
+      formData.append('view_price', String(Math.round(form.value.view_price_yuan * 100)))
+      formData.append('download_price', String(Math.round(form.value.download_price_yuan * 100)))
+      if (selectedFile.value) {
+        formData.append('file', selectedFile.value)
+      }
     }
 
     let res
