@@ -204,6 +204,8 @@ import { useUserStore } from '../stores/user'
 import wechatQr from '../assets/payment/wechat-qr.png'
 import alipayQr from '../assets/payment/alipay-qr.png'
 
+const API_BASE = 'https://api.urbancopilot.qzz.io'
+
 const router = useRouter()
 const userStore = useUserStore()
 
@@ -223,7 +225,7 @@ const paymentModal = ref({
 // 1. 获取全局系统配置
 const fetchSettings = async () => {
   try {
-    const res = await fetch('/api/public-settings')
+    const res = await fetch(`${API_BASE}/api/public-settings`)
     if (res.ok) {
       const data = await res.json()
       if (data.settings) {
@@ -239,7 +241,7 @@ const fetchSettings = async () => {
 const fetchResources = async () => {
   isLoading.value = true
   try {
-    const res = await fetch('/api/resources?module=library')
+    const res = await fetch(`${API_BASE}/api/resources?module=library`)
     if (res.ok) {
       const data = await res.json()
       resources.value = data.resources || []
@@ -291,7 +293,7 @@ const handleAccess = async (item, type) => {
   }
 
   try {
-    const res = await fetch(`/api/resources/${item.id}/access?type=${type}`, {
+    const res = await fetch(`${API_BASE}/api/resources/${item.id}/access?type=${type}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${userStore.token}`
