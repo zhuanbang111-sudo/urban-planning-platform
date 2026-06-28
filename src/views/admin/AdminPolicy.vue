@@ -155,31 +155,116 @@
             <textarea v-model="form.description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="请简要说明该政策的核心适用场景与效力级别"></textarea>
           </div>
 
-          <!-- 分类与查看等级 -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">分类名称</label>
-              <select v-model="categorySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">请选择已有分类 (不选为未分类)</option>
-                <option v-for="cat in existingCategories" :key="cat" :value="cat">{{ cat }}</option>
-                <option value="__custom__">➕ 自定义新分类...</option>
-              </select>
-              <input 
-                v-if="categorySelect === '__custom__'"
-                v-model="categoryCustom" 
-                type="text" 
-                required
-                class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                placeholder="如：综合标准、水务政策"
-              >
+          <!-- 查看等级 -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">查看等级门槛</label>
+            <select v-model.number="form.min_level" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option :value="0">公开免费</option>
+              <option :value="1">登录免费用户可看</option>
+              <option :value="2">仅会员免费 (非会员需付费)</option>
+            </select>
+          </div>
+
+          <!-- 标签多维度选择体系 -->
+          <div class="space-y-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <div class="text-xs font-bold text-gray-800 border-b pb-1">🏷️ 标签维度划分 (多选)</div>
+            
+            <div v-for="dim in TAG_DIMENSIONS" :key="dim.key" class="space-y-2">
+              <div class="text-xs font-bold text-gray-600">{{ dim.label }}</div>
+              <div class="flex flex-wrap gap-1.5 items-center">
+                <!-- 预设标签 -->
+                <button
+                  v-for="opt in dim.options"
+                  :key="opt"
+                  type="button"
+                  @click="toggleTagSelection(dim.key, opt)"
+                  :class="tagState[dim.key].includes(opt) 
+                    ? 'bg-blue-600 text-white border-blue-600' 
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'"
+                  class="px-2.5 py-1 text-xs border rounded-full transition-colors font-medium flex items-center"
+                >
+                  {{ opt }}
+                </button>
+
+                <!-- 自定义并在当前已选中的临时标签 -->
+                <span
+                  v-for="custTag in customOptions[dim.key]"
+                  :key="custTag"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium border rounded-full transition-colors"
+                  :class="tagState[dim.key].includes(custTag)
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-600 border-gray-200'"
+                >
+                  <span @click="toggleTagSelection(dim.key, custTag)" class="cursor-pointer">{{ custTag }}</span>
+                  <button
+                    type="button"
+                    @click="removeCustomTag(dim.key, custTag)"
+                    class="ml-0.5 text-[10px] opacity-75 hover:opacity-100 focus:outline-none"
+                    :class="tagState[dim.key].includes(custTag) ? 'text-white hover:text-red-200' : 'text-gray-400 hover:text-red-500'"
+                  >
+                    ×
+                  </button>
+                </span>
+
+                <!-- ➕ 呼出自定义新标签按钮 -->
+                <button
+                  v-if="!showCustomInput[dim.key]"
+                  type="button"
+                  @click="showCustomInput[dim.key] = true"
+                  class="px-2.5 py-1 text-xs border border-dashed border-gray-300 rounded-full text-gray-500 hover:text-blue-600 hover:border-blue-500 bg-white transition-colors flex items-center"
+                >
+                  <span>➕ 自定义新标签</span>
+                </button>
+              </div>
+
+              <!-- 自定义标签行内输入区 -->
+              <div v-if="showCustomInput[dim.key]" class="flex items-center gap-2 mt-1.5 animate-fade-in">
+                <input
+                  v-model="customInputValue[dim.key]"
+                  type="text"
+                  @keydown.enter.prevent="addCustomTag(dim.key)"
+                  class="px-2.5 py-1 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                  placeholder="请输入新标签"
+                >
+                <button
+                  type="button"
+                  @click="addCustomTag(dim.key)"
+                  class="px-2.5 py-1 text-xs text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors font-medium"
+                >
+                  添加
+                </button>
+                <button
+                  type="button"
+                  @click="showCustomInput[dim.key] = false; customInputValue[dim.key] = ''"
+                  class="px-2 py-1 text-xs text-gray-400 hover:text-gray-600"
+                >
+                  取消
+                </button>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">查看等级门槛</label>
-              <select v-model.number="form.min_level" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option :value="0">公开免费</option>
-                <option :value="1">登录免费用户可看</option>
-                <option :value="2">仅会员免费 (非会员需付费)</option>
-              </select>
+
+            <!-- 历史遗留“其他标签”展示区 -->
+            <div v-if="tagState.other.length > 0" class="space-y-2 pt-2 border-t border-gray-100">
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-gray-600">其他标签</span>
+                <span class="text-[10px] text-gray-400 font-normal">（无法自动归类到上述维度的历史标签，可单独移除）</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <span
+                  v-for="otTag in tagState.other"
+                  :key="otTag"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium border rounded-full bg-yellow-50 text-yellow-800 border-yellow-200"
+                >
+                  <span>{{ otTag }}</span>
+                  <button
+                    type="button"
+                    @click="removeOtherTag(otTag)"
+                    class="ml-0.5 text-[10px] text-yellow-600 hover:text-red-500 focus:outline-none"
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
 
@@ -329,12 +414,36 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
 // 固定的模块和基准 API
 const MODULE = 'policy'
 const API_BASE = 'https://api.urbancopilot.qzz.io'
+
+// 三个维度预设选项
+const TAG_DIMENSIONS = [
+  {
+    key: 'admin_level',
+    label: '行政层级',
+    options: ['国家', '省级', '市级']
+  },
+  {
+    key: 'stage',
+    label: '业务阶段',
+    options: ['规划', '建设', '投融资', '运维管理', '综合']
+  },
+  {
+    key: 'specialty',
+    label: '专业分类',
+    options: [
+      '给水工程', '排水工程（雨水）', '排水工程（污水）', 
+      '海绵城市与雨洪管理', '综合管廊', '道路交通', '桥梁工程', 
+      '燃气工程', '热力工程', '电力工程', '通信工程', '环境卫生', 
+      '园林绿化', '消防工程', '防洪工程', '抗震工程', '综合'
+    ]
+  }
+]
 
 // 列表及加载控制
 const resources = ref([])
@@ -348,7 +457,6 @@ const selectedFile = ref(null)
 const form = ref({
   title: '',
   description: '',
-  category: '',
   min_level: 0,
   view_price_yuan: 0,
   download_price_yuan: 0,
@@ -357,14 +465,33 @@ const form = ref({
   document_date: ''
 })
 
-// 分类下拉组合框状态变量
-const categorySelect = ref('')
-const categoryCustom = ref('')
+// 多维度标签选择器专用状态
+const tagState = ref({
+  admin_level: [],
+  stage: [],
+  specialty: [],
+  other: []
+})
 
-// 动态提取已有分类并去重
-const existingCategories = computed(() => {
-  const cats = resources.value.map(item => item.category).filter(Boolean)
-  return [...new Set(cats)]
+// 用户自行追加并选中的各维度临时自定义标签
+const customOptions = ref({
+  admin_level: [],
+  stage: [],
+  specialty: []
+})
+
+// 对应输入框是否展开的状态
+const showCustomInput = ref({
+  admin_level: false,
+  stage: false,
+  specialty: false
+})
+
+// 自定义标签文本框临时变量
+const customInputValue = ref({
+  admin_level: '',
+  stage: '',
+  specialty: ''
 })
 
 // 订单/特许授权 Modal 状态
@@ -386,6 +513,87 @@ const getHeaders = () => {
   return {
     'Authorization': `Bearer ${token}`
   }
+}
+
+// 解析已有分类字符串到多维度标签状态中
+const parseCategoryToTagState = (categoryStr) => {
+  tagState.value = { admin_level: [], stage: [], specialty: [], other: [] }
+  customOptions.value = { admin_level: [], stage: [], specialty: [] }
+  
+  if (!categoryStr) return
+
+  const tags = categoryStr.split(',').map(t => t.trim()).filter(Boolean)
+  
+  tags.forEach(tag => {
+    let matched = false
+    for (const dim of TAG_DIMENSIONS) {
+      if (dim.options.includes(tag)) {
+        tagState.value[dim.key].push(tag)
+        matched = true
+        break
+      }
+    }
+    if (!matched) {
+      // 无法匹配进预设选项的，全部放入 other 标签进行展示
+      tagState.value.other.push(tag)
+    }
+  })
+}
+
+// 组装最终多维度标签字符串
+const buildCategoryString = () => {
+  const parts = [
+    ...tagState.value.admin_level,
+    ...tagState.value.stage,
+    ...tagState.value.specialty,
+    ...tagState.value.other
+  ]
+  return [...new Set(parts)].filter(Boolean).join(',')
+}
+
+// 点击标签切换状态
+const toggleTagSelection = (dimKey, tag) => {
+  if (tagState.value[dimKey].includes(tag)) {
+    tagState.value[dimKey] = tagState.value[dimKey].filter(t => t !== tag)
+  } else {
+    tagState.value[dimKey].push(tag)
+  }
+}
+
+// 在某个特定维度下新增自定义新标签
+const addCustomTag = (dimKey) => {
+  const val = customInputValue.value[dimKey].trim()
+  if (!val) return
+  
+  const dimension = TAG_DIMENSIONS.find(d => d.key === dimKey)
+  const isPreset = dimension.options.includes(val)
+  
+  if (isPreset) {
+    if (!tagState.value[dimKey].includes(val)) {
+      tagState.value[dimKey].push(val)
+    }
+  } else {
+    if (!customOptions.value[dimKey].includes(val)) {
+      customOptions.value[dimKey].push(val)
+    }
+    if (!tagState.value[dimKey].includes(val)) {
+      tagState.value[dimKey].push(val)
+    }
+  }
+  
+  customInputValue.value[dimKey] = ''
+  showCustomInput.value[dimKey] = false
+}
+
+// 移除用户自定义的标签徽章
+const removeCustomTag = (dimKey, tag) => {
+  tagState.value[dimKey] = tagState.value[dimKey].filter(t => t !== tag)
+  customOptions.value[dimKey] = customOptions.value[dimKey].filter(t => t !== tag)
+}
+
+// 移除历史“其他标签”中的项
+const removeOtherTag = (tag) => {
+  tagState.value.other = tagState.value.other.filter(t => t !== tag)
 }
 
 // 1. 获取资源列表
@@ -489,12 +697,16 @@ const toggleStatus = async (item) => {
 const openAddModal = () => {
   isEdit.value = false
   selectedFile.value = null
-  categorySelect.value = ''
-  categoryCustom.value = ''
+  
+  // 初始化及重置多维度标签相关的各个响应式变量
+  tagState.value = { admin_level: [], stage: [], specialty: [], other: [] }
+  customOptions.value = { admin_level: [], stage: [], specialty: [] }
+  showCustomInput.value = { admin_level: false, stage: false, specialty: false }
+  customInputValue.value = { admin_level: '', stage: '', specialty: '' }
+
   form.value = {
     title: '',
     description: '',
-    category: '',
     min_level: 0,
     view_price_yuan: 0,
     download_price_yuan: 0,
@@ -510,23 +722,12 @@ const openEditModal = (item) => {
   currentId.value = item.id
   selectedFile.value = null
 
-  // 处理分类下拉选项或手动输入的自动匹配
-  const cat = item.category || ''
-  if (cat === '') {
-    categorySelect.value = ''
-    categoryCustom.value = ''
-  } else if (existingCategories.value.includes(cat)) {
-    categorySelect.value = cat
-    categoryCustom.value = ''
-  } else {
-    categorySelect.value = '__custom__'
-    categoryCustom.value = cat
-  }
+  // 解析 category 字符串到多维度标签中
+  parseCategoryToTagState(item.category || '')
 
   form.value = {
     title: item.title,
     description: item.description || '',
-    category: item.category || '',
     min_level: item.min_level,
     view_price_yuan: Number((item.view_price / 100).toFixed(2)),
     download_price_yuan: Number((item.download_price / 100).toFixed(2)),
@@ -559,9 +760,8 @@ const submitForm = async () => {
     formData.append('title', form.value.title)
     formData.append('description', form.value.description || '')
 
-    // 分类组合框提交逻辑判定
-    const finalCategory = categorySelect.value === '__custom__' ? categoryCustom.value : categorySelect.value
-    formData.append('category', finalCategory || '')
+    // 拼装多维度标签为逗号连接字符串写入 category
+    formData.append('category', buildCategoryString())
 
     formData.append('min_level', String(form.value.min_level))
     formData.append('source_type', form.value.source_type)

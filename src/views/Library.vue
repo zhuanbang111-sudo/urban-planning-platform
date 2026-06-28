@@ -64,11 +64,22 @@
             </h3>
           </div>
 
-          <!-- 分类标签 -->
-          <div class="flex items-center gap-2 mb-3">
-            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
-              {{ item.category || '未分类' }}
-            </span>
+          <!-- 分类标签多徽章展示区 -->
+          <div class="flex flex-wrap items-center gap-2 mb-3">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <template v-if="splitTags(item.category).length > 0">
+                <span 
+                  v-for="tag in splitTags(item.category)" 
+                  :key="tag" 
+                  class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
+                >
+                  {{ tag }}
+                </span>
+              </template>
+              <span v-else class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                未分类
+              </span>
+            </div>
             <span class="text-xs text-gray-400">
               大小: {{ formatFileSize(item.file_size) }}
             </span>
@@ -225,6 +236,11 @@ const paymentModal = ref({
   price: 0
 })
 
+// 辅助函数：把逗号分割的多标签转换为数组
+const splitTags = (categoryStr) => {
+  return (categoryStr || '').split(',').map(t => t.trim()).filter(Boolean)
+}
+
 // 1. 获取全局系统配置
 const fetchSettings = async () => {
   try {
@@ -261,17 +277,24 @@ onMounted(() => {
   fetchResources()
 })
 
-// 3. 提取动态去重的分类列表
+// 3. 提取动态去重的分类多标签选项
 const categories = computed(() => {
-  const cats = resources.value.map(item => item.category).filter(Boolean)
-  return ['全部分类', ...new Set(cats)]
+  const allTags = resources.value.flatMap(item => 
+    (item.category || '').split(',').map(t => t.trim()).filter(Boolean)
+  )
+  return ['全部分类', ...new Set(allTags)]
 })
 
-// 前端本地分类筛选与排序
+// 前端本地分类多标签级联筛选与排序
 const filteredResources = computed(() => {
-  const list = selectedCategory.value === '全部分类'
-    ? [...resources.value]
-    : resources.value.filter(item => item.category === selectedCategory.value)
+  let list = resources.value
+  
+  if (selectedCategory.value !== '全部分类') {
+    list = list.filter(item => {
+      const tags = (item.category || '').split(',').map(t => t.trim()).filter(Boolean)
+      return tags.includes(selectedCategory.value)
+    })
+  }
 
   return list.sort((a, b) => {
     const dateA = a.document_date || a.created_at || ''
