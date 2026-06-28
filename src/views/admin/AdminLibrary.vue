@@ -42,6 +42,7 @@
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">标识</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">资料名称</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">分类</th>
+              <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">发布日期</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">关联文件名</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">大小</th>
               <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">查看等级</th>
@@ -61,6 +62,8 @@
               </td>
               <!-- 分类 -->
               <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{{ item.category || '未分类' }}</td>
+              <!-- 发布日期 -->
+              <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{{ item.document_date || '-' }}</td>
               <!-- 文件名 -->
               <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" :title="item.file_name">
                 <span v-if="item.source_type === 'external'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-xs">
@@ -156,7 +159,19 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-gray-700 mb-1">分类名称</label>
-              <input v-model="form.category" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="如：规划设计图集、道路排水规范">
+              <select v-model="categorySelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">请选择已有分类 (不选为未分类)</option>
+                <option v-for="cat in existingCategories" :key="cat" :value="cat">{{ cat }}</option>
+                <option value="__custom__">➕ 自定义新分类...</option>
+              </select>
+              <input 
+                v-if="categorySelect === '__custom__'"
+                v-model="categoryCustom" 
+                type="text" 
+                required
+                class="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                placeholder="如：规划设计图集、道路排水规范"
+              >
             </div>
             <div>
               <label class="block text-xs font-bold text-gray-700 mb-1">查看等级门槛</label>
@@ -166,6 +181,12 @@
                 <option :value="2">仅会员免费 (非会员需付费)</option>
               </select>
             </div>
+          </div>
+
+          <!-- 文件发布日期 -->
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">文件发布日期（选填）</label>
+            <input v-model="form.document_date" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
 
           <!-- 价格体系 -->
@@ -308,7 +329,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 
 // 固定的模块和基准 API
@@ -332,7 +353,18 @@ const form = ref({
   view_price_yuan: 0,
   download_price_yuan: 0,
   source_type: 'upload',
-  external_url: ''
+  external_url: '',
+  document_date: ''
+})
+
+// 分类下拉组合框状态变量
+const categorySelect = ref('')
+const categoryCustom = ref('')
+
+// 动态提取已有分类并去重
+const existingCategories = computed(() => {
+  const cats = resources.value.map(item => item.category).filter(Boolean)
+  return [...new Set(cats)]
 })
 
 // 订单/特许授权 Modal 状态
@@ -363,7 +395,18 @@ const fetchResources = async () => {
     const res = await axios.get(`${API_BASE}/api/admin/resources?module=${MODULE}`, {
       headers: getHeaders()
     })
-    resources.value = res.data.resources || []
+    const dataList = res.data.resources || []
+    
+    // 按发布日期或创建时间做降序排序 (最新排在最前)
+    dataList.sort((a, b) => {
+      const valA = a.document_date || a.created_at || ''
+      const valB = b.document_date || b.created_at || ''
+      if (valA < valB) return 1
+      if (valA > valB) return -1
+      return 0
+    })
+    
+    resources.value = dataList
   } catch (err) {
     alert('无法加载资料列表，错误提示: ' + (err.response?.data?.message || err.message))
   } finally {
@@ -425,6 +468,7 @@ const toggleStatus = async (item) => {
     formData.append('download_price', String(item.download_price))
     formData.append('status', newStatus)
     formData.append('source_type', item.source_type || 'upload')
+    formData.append('document_date', item.document_date || '')
     if (item.source_type === 'external') {
       formData.append('external_url', item.external_url || '')
     }
@@ -445,6 +489,8 @@ const toggleStatus = async (item) => {
 const openAddModal = () => {
   isEdit.value = false
   selectedFile.value = null
+  categorySelect.value = ''
+  categoryCustom.value = ''
   form.value = {
     title: '',
     description: '',
@@ -453,7 +499,8 @@ const openAddModal = () => {
     view_price_yuan: 0,
     download_price_yuan: 0,
     source_type: 'upload',
-    external_url: ''
+    external_url: '',
+    document_date: ''
   }
   showFormModal.value = true
 }
@@ -462,6 +509,20 @@ const openEditModal = (item) => {
   isEdit.value = true
   currentId.value = item.id
   selectedFile.value = null
+
+  // 处理分类下拉选项或手动输入的自动匹配
+  const cat = item.category || ''
+  if (cat === '') {
+    categorySelect.value = ''
+    categoryCustom.value = ''
+  } else if (existingCategories.value.includes(cat)) {
+    categorySelect.value = cat
+    categoryCustom.value = ''
+  } else {
+    categorySelect.value = '__custom__'
+    categoryCustom.value = cat
+  }
+
   form.value = {
     title: item.title,
     description: item.description || '',
@@ -470,7 +531,8 @@ const openEditModal = (item) => {
     view_price_yuan: Number((item.view_price / 100).toFixed(2)),
     download_price_yuan: Number((item.download_price / 100).toFixed(2)),
     source_type: item.source_type || 'upload',
-    external_url: item.external_url || ''
+    external_url: item.external_url || '',
+    document_date: item.document_date || ''
   }
   showFormModal.value = true
 }
@@ -496,9 +558,14 @@ const submitForm = async () => {
     formData.append('module', MODULE)
     formData.append('title', form.value.title)
     formData.append('description', form.value.description || '')
-    formData.append('category', form.value.category || '')
+
+    // 分类组合框提交逻辑判定
+    const finalCategory = categorySelect.value === '__custom__' ? categoryCustom.value : categorySelect.value
+    formData.append('category', finalCategory || '')
+
     formData.append('min_level', String(form.value.min_level))
     formData.append('source_type', form.value.source_type)
+    formData.append('document_date', form.value.document_date || '')
 
     if (form.value.source_type === 'external') {
       formData.append('external_url', form.value.external_url)

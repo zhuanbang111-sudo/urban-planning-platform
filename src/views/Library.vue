@@ -72,6 +72,9 @@
             <span class="text-xs text-gray-400">
               大小: {{ formatFileSize(item.file_size) }}
             </span>
+            <span v-if="item.document_date" class="text-xs text-gray-400">
+              发布: {{ item.document_date }}
+            </span>
           </div>
 
           <!-- 描述信息 -->
@@ -111,7 +114,7 @@
               class="w-full px-3 py-2 bg-green-50 hover:bg-green-100 text-green-950 font-medium text-xs rounded-lg transition-colors border border-green-200 flex items-center justify-center gap-1"
             >
               <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '前往查看 (免费)' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.view_price === 0 ? '前往查看' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
             </button>
           </div>
           <div v-else class="grid grid-cols-2 gap-3">
@@ -120,14 +123,14 @@
               class="px-3 py-2 bg-green-50 hover:bg-green-100 text-green-950 font-medium text-xs rounded-lg transition-colors border border-green-200 flex items-center justify-center gap-1"
             >
               <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '查看 (免费)' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.view_price === 0 ? '查看' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
             </button>
             <button 
               @click="handleAccess(item, 'download')"
               class="px-3 py-2 bg-green-800 hover:bg-green-700 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-1"
             >
               <span>📥</span>
-              <span>{{ item.download_price === 0 ? '下载 (免费)' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
+              <span>{{ item.download_price === 0 ? '下载 ' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
             </button>
           </div>
         </div>
@@ -214,7 +217,7 @@ const isLoading = ref(true)
 const selectedCategory = ref('全部分类')
 const publicSettings = ref({ site_name: '', payment_contact: '' })
 
-// 弹窗状态管理
+// 弹窗状态 management
 const paymentModal = ref({
   show: false,
   resource: null,
@@ -264,12 +267,17 @@ const categories = computed(() => {
   return ['全部分类', ...new Set(cats)]
 })
 
-// 前端本地分类筛选
+// 前端本地分类筛选与排序
 const filteredResources = computed(() => {
-  if (selectedCategory.value === '全部分类') {
-    return resources.value
-  }
-  return resources.value.filter(item => item.category === selectedCategory.value)
+  const list = selectedCategory.value === '全部分类'
+    ? [...resources.value]
+    : resources.value.filter(item => item.category === selectedCategory.value)
+
+  return list.sort((a, b) => {
+    const dateA = a.document_date || a.created_at || ''
+    const dateB = b.document_date || b.created_at || ''
+    return dateB.localeCompare(dateA)
+  })
 })
 
 // 4. 文件体积转换格式化

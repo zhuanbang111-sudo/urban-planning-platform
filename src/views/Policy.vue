@@ -72,6 +72,9 @@
             <span class="text-xs text-gray-400">
               大小: {{ formatFileSize(item.file_size) }}
             </span>
+            <span v-if="item.document_date" class="text-xs text-gray-400">
+              发布: {{ item.document_date }}
+            </span>
           </div>
 
           <!-- 描述信息 -->
@@ -264,12 +267,17 @@ const categories = computed(() => {
   return ['全部分类', ...new Set(cats)]
 })
 
-// 前端本地分类筛选
+// 前端本地分类筛选与排序
 const filteredResources = computed(() => {
-  if (selectedCategory.value === '全部分类') {
-    return resources.value
-  }
-  return resources.value.filter(item => item.category === selectedCategory.value)
+  const list = selectedCategory.value === '全部分类'
+    ? [...resources.value]
+    : resources.value.filter(item => item.category === selectedCategory.value)
+
+  return list.sort((a, b) => {
+    const dateA = a.document_date || a.created_at || ''
+    const dateB = b.document_date || b.created_at || ''
+    return dateB.localeCompare(dateA)
+  })
 })
 
 // 4. 文件体积转换格式化
