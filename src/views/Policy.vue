@@ -42,109 +42,120 @@
     </div>
 
     <!-- 空列表状态 -->
-    <div v-else-if="filteredResources.length === 0" class="py-16 text-center bg-white border border-gray-200 rounded-2xl shadow-sm">
+    <div v-else-if="filteredSorted.length === 0" class="py-16 text-center bg-white border border-gray-200 rounded-2xl shadow-sm">
       <span class="text-4xl">📂</span>
       <h3 class="text-lg font-bold text-gray-800 mt-4">暂无相关政策内容</h3>
       <p class="text-sm text-gray-500 mt-1 max-w-sm mx-auto">当前分类下暂未发布任何政策文件，敬请期待系统更新发布。</p>
     </div>
 
-    <!-- 资源列表网格 -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        v-for="item in filteredResources" 
-        :key="item.id"
-        class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-      >
-        <div>
-          <!-- 头部：模块图标 + 标题 -->
-          <div class="flex items-start gap-2.5 mb-2">
-            <span class="text-xl flex-shrink-0">📜</span>
-            <h3 class="font-bold text-gray-900 leading-snug line-clamp-2" :title="item.title">
-              {{ item.title }}
-            </h3>
-          </div>
-
-          <!-- 分类标签多徽章展示区 -->
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <template v-if="splitTags(item.category).length > 0">
-                <span 
-                  v-for="tag in splitTags(item.category)" 
-                  :key="tag" 
-                  class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium"
-                >
-                  {{ tag }}
-                </span>
-              </template>
-              <span v-else class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
-                未分类
-              </span>
+    <!-- 资源列表时间轴 -->
+    <div v-else class="bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm">
+      <div class="relative">
+        <!-- 时间轴纵向轨道线 -->
+        <div class="absolute left-[76px] top-1 bottom-1 w-px bg-gray-200"></div>
+        
+        <!-- 时间轴单项 -->
+        <div 
+          v-for="item in visibleResources" 
+          :key="item.id" 
+          class="flex gap-6 relative mb-7 last:mb-0"
+        >
+          <!-- 节点圆点 -->
+          <div class="absolute left-[76px] top-1.5 w-2.5 h-2.5 rounded-full bg-blue-600 z-10"></div>
+          
+          <!-- 左侧发布时间 -->
+          <div class="w-16 flex-shrink-0 text-right">
+            <div 
+              class="text-xl font-medium leading-tight"
+              :class="getDisplayDate(item).isFallback ? 'text-gray-400' : 'text-gray-900'"
+            >
+              {{ getDisplayDate(item).year }}
             </div>
-            <span class="text-xs text-gray-400">
-              大小: {{ formatFileSize(item.file_size) }}
-            </span>
-            <span v-if="item.document_date" class="text-xs text-gray-400">
-              发布: {{ item.document_date }}
-            </span>
+            <div class="text-xs text-gray-400">{{ getDisplayDate(item).monthDay }}</div>
           </div>
+          
+          <!-- 右侧内容承载区 -->
+          <div class="flex-1 min-w-0">
+            <!-- 标题 & 标签 -->
+            <div class="flex items-baseline justify-between gap-2.5 mb-1.5">
+              <span class="text-sm font-bold text-gray-900 truncate min-w-0" :title="item.title">
+                {{ item.title }}
+              </span>
+              <div class="flex gap-1 flex-shrink-0 items-center">
+                <span 
+                  v-for="tag in getVisibleTags(item.category)" 
+                  :key="tag" 
+                  class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 whitespace-nowrap"
+                >{{ tag }}</span>
+                <span 
+                  v-if="getOverflowCount(item.category) > 0"
+                  class="text-[10px] px-2 py-0.5 rounded-full bg-gray-50 text-gray-400 cursor-default whitespace-nowrap"
+                  :title="getOverflowTags(item.category).join('，')"
+                >+{{ getOverflowCount(item.category) }}</span>
+              </div>
+            </div>
+            
+            <!-- 描述 -->
+            <p class="text-xs text-gray-500 leading-relaxed mb-2.5 line-clamp-2">
+              {{ item.description || '暂无详细描述说明。' }}
+            </p>
+            
+            <!-- 操作按钮（Policy.vue 固定为纯文字“查看”和“下载”） -->
+            <div class="flex gap-2">
+              <button 
+                @click="handleAccess(item, 'view')"
+                class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-950 font-medium text-xs rounded-lg transition-colors border border-blue-200"
+              >
+                查看
+              </button>
+              <button 
+                v-if="item.source_type !== 'external'"
+                @click="handleAccess(item, 'download')"
+                class="px-3 py-1.5 bg-blue-900 hover:bg-blue-800 text-white font-medium text-xs rounded-lg transition-colors"
+              >
+                下载
+              </button>
+            </div>
 
-          <!-- 描述信息 -->
-          <p class="text-gray-600 text-xs leading-relaxed mb-4 line-clamp-3" :title="item.description">
-            {{ item.description || '暂无详细描述说明。' }}
-          </p>
+            <!-- 相关解读嵌套区域 -->
+            <div 
+              v-if="childrenMap[item.id] && childrenMap[item.id].length > 0" 
+              class="mt-3 bg-gray-50 rounded-lg p-3"
+            >
+              <div class="text-xs text-gray-600 mb-2 flex items-center gap-1">
+                <span>🔗</span>
+                <span>相关解读（{{ childrenMap[item.id].length }}）</span>
+              </div>
+              <div class="space-y-2">
+                <div 
+                  v-for="article in childrenMap[item.id]" 
+                  :key="article.id"
+                  class="flex items-center justify-between gap-2"
+                >
+                  <span class="text-xs text-gray-700 truncate min-w-0" :title="article.title">
+                    {{ article.title }}
+                  </span>
+                  <button 
+                    @click="handleAccess(article, 'view')"
+                    class="text-[11px] px-2.5 py-1 bg-white border border-gray-200 hover:bg-gray-100 rounded-md flex-shrink-0"
+                  >
+                    查看
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div>
-          <!-- 权限与等级标签 -->
-          <div class="flex items-center justify-between border-t border-gray-100 pt-3 mb-4">
-            <span class="text-xs text-gray-400">访问权限</span>
-            <span 
-              v-if="item.min_level === 0" 
-              class="px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 text-xs rounded-md font-semibold"
-            >
-              公开
-            </span>
-            <span 
-              v-else-if="item.min_level === 1" 
-              class="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 text-xs rounded-md font-semibold"
-            >
-              登录可看
-            </span>
-            <span 
-              v-else 
-              class="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs rounded-md font-semibold"
-            >
-              仅会员
-            </span>
-          </div>
-
-          <!-- 功能操作区 -->
-          <div v-if="item.source_type === 'external'">
-            <button 
-              @click="handleAccess(item, 'view')"
-              class="w-full px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-950 font-medium text-xs rounded-lg transition-colors border border-blue-200 flex items-center justify-center gap-1"
-            >
-              <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '前往查看' : `前往查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
-            </button>
-          </div>
-          <div v-else class="grid grid-cols-2 gap-3">
-            <button 
-              @click="handleAccess(item, 'view')"
-              class="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-950 font-medium text-xs rounded-lg transition-colors border border-blue-200 flex items-center justify-center gap-1"
-            >
-              <span>👁️</span>
-              <span>{{ item.view_price === 0 ? '查看 ' : `查看 ¥${(item.view_price / 100).toFixed(2)}` }}</span>
-            </button>
-            <button 
-              @click="handleAccess(item, 'download')"
-              class="px-3 py-2 bg-blue-900 hover:bg-blue-800 text-white font-medium text-xs rounded-lg transition-colors flex items-center justify-center gap-1"
-            >
-              <span>📥</span>
-              <span>{{ item.download_price === 0 ? '下载 ' : `下载 ¥${(item.download_price / 100).toFixed(2)}` }}</span>
-            </button>
-          </div>
-        </div>
+      <!-- 分页加载更多 -->
+      <div v-if="hasMore" class="flex justify-center mt-8 pt-4 border-t border-gray-100">
+        <button 
+          @click="loadMore"
+          class="text-sm px-5 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          加载更多
+        </button>
       </div>
     </div>
 
@@ -211,7 +222,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 
@@ -236,10 +247,80 @@ const paymentModal = ref({
   price: 0
 })
 
-// 辅助函数：把逗号分割的多标签转换为数组
+// 分页与加载状态
+const visibleCount = ref(10)
+const PAGE_SIZE = 10
+
+// ---------------- 辅助处理函数 ----------------
 const splitTags = (categoryStr) => {
   return (categoryStr || '').split(',').map(t => t.trim()).filter(Boolean)
 }
+
+const splitDateParts = (dateStr) => {
+  if (!dateStr) return { year: '', monthDay: '' }
+  const datePart = dateStr.split('T')[0]
+  const parts = datePart.split('-')
+  if (parts.length < 3) return { year: datePart, monthDay: '' }
+  return { year: parts[0], monthDay: `${parts[1]}-${parts[2]}` }
+}
+
+const getDisplayDate = (item) => {
+  if (item.document_date) {
+    const { year, monthDay } = splitDateParts(item.document_date)
+    return { year, monthDay, isFallback: false }
+  }
+  const { year, monthDay } = splitDateParts(item.created_at)
+  return { year, monthDay: `上传 ${monthDay}`, isFallback: true }
+}
+
+const getVisibleTags = (categoryStr) => splitTags(categoryStr).slice(0, 3)
+const getOverflowTags = (categoryStr) => {
+  const tags = splitTags(categoryStr)
+  return tags.length > 3 ? tags.slice(3) : []
+}
+const getOverflowCount = (categoryStr) => Math.max(0, splitTags(categoryStr).length - 3)
+
+// ---------------- 分组/排序 计算属性 ----------------
+const allTopLevel = computed(() => 
+  resources.value.filter(r => !r.parent_id)
+)
+
+const childrenMap = computed(() => {
+  const map = {}
+  resources.value.forEach(r => {
+    if (r.parent_id) {
+      if (!map[r.parent_id]) map[r.parent_id] = []
+      map[r.parent_id].push(r)
+    }
+  })
+  return map
+})
+
+const categories = computed(() => {
+  const allTags = allTopLevel.value.flatMap(item => 
+    splitTags(item.category)
+  )
+  return ['全部分类', ...new Set(allTags)]
+})
+
+const filteredSorted = computed(() => {
+  let list = allTopLevel.value
+  if (selectedCategory.value !== '全部分类') {
+    list = list.filter(item => splitTags(item.category).includes(selectedCategory.value))
+  }
+  return list.slice().sort((a, b) => {
+    const dateA = a.document_date || a.created_at
+    const dateB = b.document_date || b.created_at
+    return new Date(dateB) - new Date(dateA)
+  })
+})
+
+const visibleResources = computed(() => filteredSorted.value.slice(0, visibleCount.value))
+const hasMore = computed(() => visibleCount.value < filteredSorted.value.length)
+const loadMore = () => { visibleCount.value += PAGE_SIZE }
+
+// 分类变动重置分页
+watch(selectedCategory, () => { visibleCount.value = PAGE_SIZE })
 
 // 1. 获取全局系统配置
 const fetchSettings = async () => {
@@ -277,32 +358,6 @@ onMounted(() => {
   fetchResources()
 })
 
-// 3. 提取动态去重的分类多标签选项
-const categories = computed(() => {
-  const allTags = resources.value.flatMap(item => 
-    (item.category || '').split(',').map(t => t.trim()).filter(Boolean)
-  )
-  return ['全部分类', ...new Set(allTags)]
-})
-
-// 前端本地分类多标签级联筛选与排序
-const filteredResources = computed(() => {
-  let list = resources.value
-  
-  if (selectedCategory.value !== '全部分类') {
-    list = list.filter(item => {
-      const tags = (item.category || '').split(',').map(t => t.trim()).filter(Boolean)
-      return tags.includes(selectedCategory.value)
-    })
-  }
-
-  return list.sort((a, b) => {
-    const dateA = a.document_date || a.created_at || ''
-    const dateB = b.document_date || b.created_at || ''
-    return dateB.localeCompare(dateA)
-  })
-})
-
 // 4. 文件体积转换格式化
 const formatFileSize = (bytes) => {
   if (!bytes) return '0 KB'
@@ -333,27 +388,23 @@ const handleAccess = async (item, type) => {
 
     const contentType = res.headers.get('content-type') || ''
     
-    // 如果响应头包含 application/json，表明没有直连文件权限，需要返回业务层JSON判定
     if (contentType.includes('application/json')) {
       const data = await res.json()
       
       if (data.requiresLogin) {
         alert('登录态已失效或需要重新登录')
-        userStore.logout?.() // 确保清理过期的Token
+        userStore.logout?.()
         router.push('/login')
         return
       }
 
-      // 外部链接，通过直接打开
       if (data.external === true) {
         window.open(data.url, '_blank')
         return
       }
 
-      // 如果未被特许授权，拉起前台支付引导
       openPaymentModal(item, type, data)
     } else {
-      // 拿到物理文件流
       const blob = await res.blob()
       const fileUrl = URL.createObjectURL(blob)
 
@@ -366,7 +417,6 @@ const handleAccess = async (item, type) => {
         document.body.removeChild(link)
         URL.revokeObjectURL(fileUrl)
       } else {
-        // 在新标签页原生预览
         window.open(fileUrl, '_blank')
       }
     }

@@ -103,6 +103,7 @@
                   {{ item.status === 'active' ? '下架' : '上架' }}
                 </button>
                 <button @click="openPurchasesModal(item)" class="text-indigo-600 hover:text-indigo-800 font-semibold text-xs">购买记录</button>
+                <button @click="openArticlesModal(item)" class="text-purple-600 hover:text-purple-800 font-semibold text-xs">解读文章</button>
                 <button @click="handleDelete(item.id)" class="text-red-600 hover:text-red-800 font-semibold text-xs">删除</button>
               </td>
             </tr>
@@ -410,6 +411,162 @@
         </div>
       </div>
     </div>
+
+    <!-- 解读文章管理 Modal -->
+    <div v-if="showArticlesModal" class="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+      <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-gray-100 p-6 flex flex-col max-h-[85vh]">
+        <!-- 标题区 -->
+        <div class="flex justify-between items-center border-b pb-3 flex-shrink-0">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">📎 解读文章管理</h3>
+            <p class="text-xs text-gray-400 mt-0.5">针对资源: {{ currentParentTitle }}</p>
+          </div>
+          <button @click="showArticlesModal = false" class="text-gray-400 hover:text-gray-600 text-xl">×</button>
+        </div>
+
+        <!-- 表单区 -->
+        <div class="bg-gray-50 border border-gray-200 p-4 rounded-xl mt-4 space-y-3 flex-shrink-0 overflow-y-auto">
+          <h4 class="text-xs font-bold text-[#1e3a5f] uppercase tracking-wide">
+            {{ articleForm.id ? '✏️ 编辑解读文章' : '💡 新增解读文章' }}
+          </h4>
+          <form @submit.prevent="submitArticle" class="space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- 标题 -->
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 mb-1">文章标题 *</label>
+                <input v-model="articleForm.title" type="text" required placeholder="请输入文章标题" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none">
+              </div>
+              <!-- 分类 -->
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 mb-1">分类 (选填)</label>
+                <input v-model="articleForm.category" type="text" placeholder="例: 官方解读, 专家解读" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- 发布日期 -->
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 mb-1">发布日期 (选填)</label>
+                <input v-model="articleForm.document_date" type="date" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none">
+              </div>
+              <!-- 内容来源 -->
+              <div>
+                <label class="block text-[10px] font-bold text-gray-500 mb-1">内容来源 *</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button 
+                    type="button"
+                    @click="articleForm.source_type = 'upload'"
+                    :class="articleForm.source_type === 'upload' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20' : 'bg-white border-gray-300 text-gray-600'"
+                    class="py-1 border rounded-lg text-[10px] font-semibold text-center transition-all"
+                  >
+                    上传文件
+                  </button>
+                  <button 
+                    type="button"
+                    @click="articleForm.source_type = 'external'"
+                    :class="articleForm.source_type === 'external' ? 'bg-blue-50 border-blue-500 text-blue-700 ring-2 ring-blue-500/20' : 'bg-white border-gray-300 text-gray-600'"
+                    class="py-1 border rounded-lg text-[10px] font-semibold text-center transition-all"
+                  >
+                    外部链接
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 描述 -->
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 mb-1">描述与简介</label>
+              <textarea v-model="articleForm.description" rows="2" placeholder="请简要描述本篇解读文章的核心要点" class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white focus:outline-none"></textarea>
+            </div>
+
+            <!-- 物理文件上传区域 / 外部链接输入框 -->
+            <div class="border-t pt-2">
+              <div v-if="articleForm.source_type === 'upload'">
+                <label class="block text-[10px] font-bold text-gray-500 mb-1">
+                  关联文件 {{ articleForm.id ? '(选填)' : '*' }}
+                </label>
+                <input 
+                  type="file" 
+                  @change="handleArticleFileChange" 
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" 
+                  :required="!articleForm.id"
+                  class="w-full text-[10px] text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                >
+              </div>
+              <div v-else>
+                <label class="block text-[10px] font-bold text-gray-500 mb-1">
+                  外部链接地址 *
+                </label>
+                <input 
+                  v-model="articleForm.external_url" 
+                  type="url" 
+                  required
+                  placeholder="https://example.com/article"
+                  class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none bg-white" 
+                >
+              </div>
+            </div>
+
+            <!-- 提交控制 -->
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+              <button 
+                v-if="articleForm.id" 
+                type="button" 
+                @click="resetArticleForm" 
+                class="px-3 py-1.5 text-xs text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg"
+              >
+                取消编辑
+              </button>
+              <button 
+                type="submit" 
+                class="px-4 py-1.5 text-xs text-white bg-green-600 hover:bg-green-700 rounded-lg shadow font-semibold"
+              >
+                {{ articleForm.id ? '保存修改' : '添加解读文章' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- 列表区 -->
+        <div class="mt-4 overflow-y-auto flex-grow">
+          <div v-if="articlesLoading" class="flex justify-center items-center py-10">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+          </div>
+          <div v-else-if="articles.length === 0" class="text-center py-10 text-gray-400 text-xs">
+            暂无关联的解读文章
+          </div>
+          <table v-else class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-gray-100/70 border-b border-gray-200">
+                <th class="px-4 py-2 font-bold text-gray-600">文章标题</th>
+                <th class="px-4 py-2 font-bold text-gray-600">来源</th>
+                <th class="px-4 py-2 font-bold text-gray-600">发布日期</th>
+                <th class="px-4 py-2 font-bold text-gray-600">创建时间</th>
+                <th class="px-4 py-2 font-bold text-gray-600 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr v-for="item in articles" :key="item.id" class="hover:bg-gray-50/50">
+                <td class="px-4 py-2 font-medium text-gray-900 max-w-xs truncate" :title="item.title">
+                  {{ item.title }}
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap">
+                  <span :class="item.source_type === 'external' ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-green-700 bg-green-50 border-green-200'" class="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold">
+                    {{ item.source_type === 'external' ? '🔗 外部' : '📤 文件' }}
+                  </span>
+                </td>
+                <td class="px-4 py-2 whitespace-nowrap text-gray-500">{{ item.document_date || '-' }}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-gray-400">{{ formatDate(item.created_at) }}</td>
+                <td class="px-4 py-2 whitespace-nowrap text-right space-x-2">
+                  <button @click="editArticle(item)" class="text-yellow-600 hover:text-yellow-800 font-bold">编辑</button>
+                  <button @click="deleteArticle(item.id)" class="text-red-600 hover:text-red-800 font-bold">删除</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -506,6 +663,23 @@ const purchaseForm = ref({
   amount_yuan: 0,
   note: ''
 })
+
+// 解读文章管理相关状态
+const showArticlesModal = ref(false)
+const articlesLoading = ref(false)
+const articles = ref([])
+const currentParentId = ref(null)
+const currentParentTitle = ref('')
+const articleForm = ref({
+  id: null,
+  title: '',
+  description: '',
+  category: '',
+  document_date: '',
+  source_type: 'upload',
+  external_url: ''
+})
+const articleSelectedFile = ref(null)
 
 // 读取授权 Token 头
 const getHeaders = () => {
@@ -866,6 +1040,123 @@ const handleDeletePurchase = async (purchaseId) => {
     }
   } catch (err) {
     alert('撤销失败: ' + (err.response?.data?.message || err.message))
+  }
+}
+
+// ================= 解读文章管理逻辑 =================
+const openArticlesModal = (item) => {
+  currentParentId.value = item.id
+  currentParentTitle.value = item.title
+  resetArticleForm()
+  showArticlesModal.value = true
+  fetchArticles()
+}
+
+const fetchArticles = async () => {
+  articlesLoading.value = true
+  try {
+    const res = await axios.get(`${API_BASE}/api/admin/resources?parent_id=${currentParentId.value}`, {
+      headers: getHeaders()
+    })
+    articles.value = res.data.resources || []
+  } catch (err) {
+    alert('拉取解读文章列表失败: ' + (err.response?.data?.message || err.message))
+  } finally {
+    articlesLoading.value = false
+  }
+}
+
+const resetArticleForm = () => {
+  articleForm.value = {
+    id: null,
+    title: '',
+    description: '',
+    category: '',
+    document_date: '',
+    source_type: 'upload',
+    external_url: ''
+  }
+  articleSelectedFile.value = null
+}
+
+const handleArticleFileChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    if (file.size > 30 * 1024 * 1024) {
+      alert('⚠️ 文件安全拦截：单个上传文件尺寸上限不可超出 30MB！')
+      e.target.value = ''
+      articleSelectedFile.value = null
+      return
+    }
+    articleSelectedFile.value = file
+  }
+}
+
+const submitArticle = async () => {
+  try {
+    const formData = new FormData()
+    formData.append('module', MODULE)
+    formData.append('parent_id', String(currentParentId.value))
+    formData.append('title', articleForm.value.title)
+    formData.append('description', articleForm.value.description || '')
+    formData.append('category', articleForm.value.category || '')
+    formData.append('document_date', articleForm.value.document_date || '')
+    formData.append('source_type', articleForm.value.source_type)
+
+    if (articleForm.value.source_type === 'external') {
+      formData.append('external_url', articleForm.value.external_url)
+    } else {
+      if (articleSelectedFile.value) {
+        formData.append('file', articleSelectedFile.value)
+      }
+    }
+
+    let res
+    if (articleForm.value.id) {
+      res = await axios.put(`${API_BASE}/api/admin/resources/${articleForm.value.id}`, formData, {
+        headers: getHeaders()
+      })
+    } else {
+      res = await axios.post(`${API_BASE}/api/admin/resources`, formData, {
+        headers: getHeaders()
+      })
+    }
+
+    if (res.data.success) {
+      alert('解读文章保存成功')
+      resetArticleForm()
+      fetchArticles()
+    }
+  } catch (err) {
+    alert('保存解读文章失败: ' + (err.response?.data?.message || err.message))
+  }
+}
+
+const editArticle = (article) => {
+  articleForm.value = {
+    id: article.id,
+    title: article.title,
+    description: article.description || '',
+    category: article.category || '',
+    document_date: article.document_date || '',
+    source_type: article.source_type || 'upload',
+    external_url: article.external_url || ''
+  }
+  articleSelectedFile.value = null
+}
+
+const deleteArticle = async (id) => {
+  if (!confirm('您是否确定要彻底删除该篇解读文章？此操作不可逆！')) return
+  try {
+    const res = await axios.delete(`${API_BASE}/api/admin/resources/${id}`, {
+      headers: getHeaders()
+    })
+    if (res.data.success) {
+      alert('解读文章已被彻底清除')
+      fetchArticles()
+    }
+  } catch (err) {
+    alert('删除解读文章失败: ' + (err.response?.data?.message || err.message))
   }
 }
 
