@@ -145,7 +145,7 @@ import axios from 'axios'
 
 const list = ref([])
 const loading = ref(false)
-const submitting = ref(ref)
+const submitting = ref(false)
 const showModal = ref(false)
 const isEdit = ref(false)
 const activeId = ref(null)

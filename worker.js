@@ -1523,7 +1523,7 @@ const handleGetPublicResources = async (request, env) => {
     const db = getDb(env)
     const resources = await queryAll(
       db,
-      `SELECT id, module, title, description, category, file_name, file_size, min_level, view_price, download_price, source_type, parent_id, created_at 
+      `SELECT id, module, title, description, category, file_name, file_size, min_level, view_price, download_price, source_type, parent_id, document_date, created_at 
        FROM resources 
        WHERE module = ? AND status = 'active' 
        ORDER BY created_at DESC`,
@@ -1653,7 +1653,7 @@ const handleAdminGetResources = async (request, env) => {
       // 模式 1：查询某篇顶层资源（如政策）下属的所有解读文章
       resources = await queryAll(
         db,
-        `SELECT id, module, title, description, category, file_key, file_name, file_size, min_level, view_price, download_price, status, source_type, external_url, parent_id, created_at 
+        `SELECT id, module, title, description, category, file_key, file_name, file_size, min_level, view_price, download_price, status, source_type, external_url, parent_id, document_date, created_at 
          FROM resources 
          WHERE parent_id = ? 
          ORDER BY created_at DESC`,
@@ -1668,7 +1668,7 @@ const handleAdminGetResources = async (request, env) => {
 
       resources = await queryAll(
         db,
-        `SELECT id, module, title, description, category, file_key, file_name, file_size, min_level, view_price, download_price, status, source_type, external_url, parent_id, created_at 
+        `SELECT id, module, title, description, category, file_key, file_name, file_size, min_level, view_price, download_price, status, source_type, external_url, parent_id, document_date, created_at 
          FROM resources 
          WHERE module = ? AND (parent_id IS NULL OR parent_id = '') 
          ORDER BY created_at DESC`,
